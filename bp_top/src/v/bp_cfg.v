@@ -27,6 +27,7 @@ module bp_cfg
    , input [coh_noc_cord_width_p-1:0]   cord_i
    , input [io_noc_did_width_p-1:0]     did_i
    , input [dword_width_p-1:0]          irf_data_i
+   , input [dword_width_p-1:0]          frf_data_i
    , input [vaddr_width_p-1:0]          npc_data_i
    , input [dword_width_p-1:0]          csr_data_i
    , input [1:0]                        priv_data_i
@@ -117,9 +118,13 @@ wire [vaddr_width_p-1:0] npc_li = cfg_data_li[0+:vaddr_width_p];
 
 wire irf_w_v_li = cfg_w_v_li & (cfg_addr_li >= bp_cfg_reg_irf_x0_gp && cfg_addr_li <= bp_cfg_reg_irf_x31_gp);
 wire irf_r_v_li = cfg_r_v_li & (cfg_addr_li >= bp_cfg_reg_irf_x0_gp && cfg_addr_li <= bp_cfg_reg_irf_x31_gp);
-// TODO: we could get rid of this subtraction with intellignent address map
 wire [reg_addr_width_p-1:0] irf_addr_li = (cfg_addr_li - bp_cfg_reg_irf_x0_gp);
 wire [dword_width_p-1:0] irf_data_li = cfg_data_li;
+
+wire frf_w_v_li = cfg_w_v_li & (cfg_addr_li >= bp_cfg_reg_frf_x0_gp && cfg_addr_li <= bp_cfg_reg_frf_x31_gp);
+wire frf_r_v_li = cfg_r_v_li & (cfg_addr_li >= bp_cfg_reg_frf_x0_gp && cfg_addr_li <= bp_cfg_reg_frf_x31_gp);
+wire [reg_addr_width_p-1:0] frf_addr_li = (cfg_addr_li - bp_cfg_reg_frf_x0_gp);
+wire [dword_width_p-1:0] frf_data_li = cfg_data_li;
 
 wire csr_w_v_li = cfg_w_v_li & (cfg_addr_li >= bp_cfg_reg_csr_begin_gp && cfg_addr_li <= bp_cfg_reg_csr_end_gp);
 wire csr_r_v_li = cfg_r_v_li & (cfg_addr_li >= bp_cfg_reg_csr_begin_gp && cfg_addr_li <= bp_cfg_reg_csr_end_gp);
@@ -167,6 +172,10 @@ assign cfg_bus_cast_o = '{freeze: freeze_r
                           ,irf_r_v: irf_r_v_li
                           ,irf_addr: irf_addr_li
                           ,irf_data: irf_data_li
+                          ,frf_w_v: frf_w_v_li
+                          ,frf_r_v: frf_r_v_li
+                          ,frf_addr: frf_addr_li
+                          ,frf_data: frf_data_li
                           ,csr_w_v: csr_w_v_li
                           ,csr_r_v: csr_r_v_li
                           ,csr_addr: csr_addr_li
@@ -184,18 +193,20 @@ assign mem_resp_cast_o = '{header : '{msg_type: mem_cmd_cast_i.header.msg_type
 																			}
                            // TODO: Add all mode bits to mux
                            ,data   : irf_r_v_li 
-                                     ? irf_data_i 
-                                     : npc_r_v_li 
-                                       ? npc_data_i
-                                       : csr_r_v_li
-                                         ? csr_data_r
-                                         : priv_r_v_li
-                                           ? priv_data_i
-                                           : did_r_v_li
-                                             ? did_i
-                                             : cord_r_v_li
-                                               ? cord_i
-                                               : cce_ucode_data_i
+                                     ? irf_data_i
+                                     : frf_r_v_li
+                                       ? frf_data_i
+                                       : npc_r_v_li 
+                                         ? npc_data_i
+                                         : csr_r_v_li
+                                           ? csr_data_r
+                                           : priv_r_v_li
+                                             ? priv_data_i
+                                             : did_r_v_li
+                                               ? did_i
+                                               : cord_r_v_li
+                                                 ? cord_i
+                                                 : cce_ucode_data_i
                            };
 
 endmodule

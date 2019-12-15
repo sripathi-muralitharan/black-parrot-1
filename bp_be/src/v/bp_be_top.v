@@ -32,6 +32,7 @@ module bp_be_top
    // Processor configuration
    , input [cfg_bus_width_lp-1:0]            cfg_bus_i
    , output [dword_width_p-1:0]              cfg_irf_data_o
+   , output [dword_width_p-1:0]              cfg_frf_data_o
    , output [vaddr_width_p-1:0]              cfg_npc_data_o
    , output [dword_width_p-1:0]              cfg_csr_data_o
    , output [1:0]                            cfg_priv_data_o
@@ -122,8 +123,6 @@ logic [vaddr_width_p-1:0] chk_epc_li;
 
 logic chk_trap_v_li, chk_ret_v_li, chk_tlb_fence_li, chk_fencei_li;
 
-logic debug_mode_lo;
-logic single_step_lo;
 logic accept_irq_lo;
 
 logic                     instret_mem3;
@@ -131,6 +130,9 @@ logic                     pc_v_mem3;
 logic [vaddr_width_p-1:0] pc_mem3;
 logic [instr_width_p-1:0] instr_mem3;
 
+logic fwb;
+logic [2:0] frm;
+logic [4:0] fflags;
 bp_be_commit_pkt_s commit_pkt;
 bp_be_trap_pkt_s trap_pkt;
 bp_be_wb_pkt_s wb_pkt;
@@ -147,6 +149,7 @@ bp_be_checker_top
    ,.cfg_bus_i(cfg_bus_i)
    ,.cfg_npc_data_o(cfg_npc_data_o)
    ,.cfg_irf_data_o(cfg_irf_data_o)
+   ,.cfg_frf_data_o(cfg_frf_data_o)
 
    ,.chk_dispatch_v_o(chk_dispatch_v)
    ,.flush_o(flush)
@@ -155,8 +158,6 @@ bp_be_checker_top
    ,.mmu_cmd_ready_i(mmu_cmd_rdy)
    ,.credits_full_i(credits_full_i)
    ,.credits_empty_i(credits_empty_i)
-   ,.debug_mode_i(debug_mode_lo)
-   ,.single_step_i(single_step_lo)
    ,.accept_irq_i(accept_irq_lo)
 
    ,.fe_cmd_o(fe_cmd_o)
@@ -193,6 +194,8 @@ bp_be_calculator_top
    ,.flush_i(flush)
 
    ,.calc_status_o(calc_status)
+
+   ,.frm_i(frm)
 
    ,.mmu_cmd_o(mmu_cmd)
    ,.mmu_cmd_v_o(mmu_cmd_v)
@@ -261,13 +264,14 @@ bp_be_mem_top
 
     ,.commit_pkt_i(commit_pkt)
 
-    ,.debug_mode_o(debug_mode_lo)
-    ,.single_step_o(single_step_lo)
-
     ,.timer_irq_i(timer_irq_i)
     ,.software_irq_i(software_irq_i)
     ,.external_irq_i(external_irq_i)
     ,.accept_irq_o(accept_irq_lo)
+
+    ,.fflags_w_v_i(wb_pkt.fflags_w_v)
+    ,.fflags_i(wb_pkt.fflags)
+    ,.frm_o(frm)
 
     ,.trap_pkt_o(trap_pkt)
     );

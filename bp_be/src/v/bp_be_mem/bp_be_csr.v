@@ -45,17 +45,19 @@ module bp_be_csr
     , input                             software_irq_i
     , input                             external_irq_i
     , output                            accept_irq_o
-    , output                            single_step_o
 
     , output [trap_pkt_width_lp-1:0]    trap_pkt_o
 
-    , output                            debug_mode_o
     , output [rv64_priv_width_gp-1:0]   priv_mode_o
     , output [ptag_width_p-1:0]         satp_ppn_o
     , output                            translation_en_o
     , output                            mstatus_sum_o
     , output                            mstatus_mxr_o
-    
+
+    , input                             fflags_w_v_i
+    , output [2:0]                      frm_o
+    , input [4:0]                       fflags_i
+
     // FE Exceptions
     , output logic                      itlb_fill_o
     , output logic                      instr_page_fault_o
@@ -101,6 +103,8 @@ wire is_debug_mode = debug_mode_r;
 wire is_m_mode = is_debug_mode | (priv_mode_r == `PRIV_MODE_M);
 wire is_s_mode = (priv_mode_r == `PRIV_MODE_S);
 wire is_u_mode = (priv_mode_r == `PRIV_MODE_U);
+
+`declare_csr(fcsr)
 
 // sstatus subset of mstatus
 // sedeleg hardcoded to 0
@@ -242,7 +246,7 @@ bsg_dff_reset
    ,.data_i(debug_mode_n)
    ,.data_o(debug_mode_r)
    );
-assign debug_mode_o = debug_mode_r;
+//assign debug_mode_o = debug_mode_r;
 
 bsg_dff_reset
  #(.width_p(2) 
@@ -342,6 +346,8 @@ always_comb
     mcycle_li        = mcountinhibit_lo.cy ? mcycle_lo + dword_width_p'(1) : mcycle_lo;
     minstret_li      = mcountinhibit_lo.ir ? minstret_lo + dword_width_p'(instret_i) : minstret_lo;
     mcountinhibit_li = mcountinhibit_lo;
+
+    fcsr_li = fcsr_lo;
 
     dcsr_li = dcsr_lo;
     dpc_li  = dpc_lo;
@@ -501,6 +507,9 @@ always_comb
         begin
             // Read case
             unique casez (csr_cmd.csr_addr)
+              `CSR_ADDR_FFLAGS : csr_data_lo = fcsr_lo.fflags;
+              `CSR_ADDR_FRM    : csr_data_lo = fcsr_lo.frm;
+              `CSR_ADDR_FCSR   : csr_data_lo = fcsr_lo;
               `CSR_ADDR_CYCLE  : csr_data_lo = mcycle_lo;
               // Time must be done by trapping, since we can't stall at this point
               `CSR_ADDR_INSTRET: csr_data_lo = minstret_lo;
@@ -557,6 +566,9 @@ always_comb
             endcase
             // Write case
             unique casez (csr_cmd.csr_addr)
+              `CSR_ADDR_FFLAGS : fcsr_li = '{frm: fcsr_lo.frm, fflags: csr_data_li, default: '0};
+              `CSR_ADDR_FRM    : fcsr_li = '{frm: csr_data_li, fflags: fcsr_lo.fflags, default: '0};
+              `CSR_ADDR_FCSR   : fcsr_li = csr_data_li;
               `CSR_ADDR_CYCLE  : mcycle_li = csr_data_li;
               // Time must be done by trapping, since we can't stall at this point
               `CSR_ADDR_INSTRET: minstret_li = csr_data_li;
@@ -605,6 +617,11 @@ always_comb
               default: illegal_instr_o = 1'b1;
             endcase
         end
+
+    if (fflags_w_v_i)
+      begin
+        fcsr_li.fflags |= fflags_i;
+      end
 
     mip_li.mtip = timer_irq_i;
     mip_li.msip = software_irq_i;
@@ -665,12 +682,14 @@ always_comb
 assign accept_irq_o = ~is_debug_mode & (m_interrupt_icode_v_li | s_interrupt_icode_v_li);
 
 // CSR slow paths
+assign frm_o        = fcsr_lo.frm;
+assign fflags_o     = fcsr_lo.fflags;
 assign satp_ppn_o       = satp_r.ppn;
 
 assign mstatus_sum_o = mstatus_lo.sum;
 assign mstatus_mxr_o = mstatus_lo.mxr;
 
-assign single_step_o = ~is_debug_mode & dcsr_lo.step;
+//assign single_step_o = ~is_debug_mode & dcsr_lo.step;
 
 assign csr_cmd_ready_o = 1'b1;
 assign data_o          = dword_width_p'(csr_data_lo);

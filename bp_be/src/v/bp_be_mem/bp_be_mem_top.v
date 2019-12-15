@@ -105,10 +105,12 @@ module bp_be_mem_top
    , input                                   software_irq_i
    , input                                   external_irq_i
    , output                                  accept_irq_o
-   , output                                  single_step_o
-   , output                                  debug_mode_o
 
    , output [trap_pkt_width_lp-1:0]          trap_pkt_o
+
+   , output [2:0]                            frm_o
+   , input [4:0]                             fflags_i
+   , input                                   fflags_w_v_i
    );
 
 `declare_bp_fe_be_if(vaddr_width_p, paddr_width_p, asid_width_p, branch_metadata_fwd_width_p);
@@ -278,8 +280,6 @@ bp_be_csr
    ,.software_irq_i(software_irq_i)
    ,.external_irq_i(external_irq_i)
    ,.accept_irq_o(accept_irq_o)
-   ,.debug_mode_o(debug_mode_o)
-   ,.single_step_o(single_step_o)
 
    ,.priv_mode_o(priv_mode_lo)
    ,.trap_pkt_o(trap_pkt)
@@ -287,6 +287,9 @@ bp_be_csr
    ,.translation_en_o(translation_en_lo)
    ,.mstatus_sum_o(mstatus_sum_lo)
    ,.mstatus_mxr_o(mstatus_mxr_lo)
+   ,.fflags_w_v_i(fflags_w_v_i)
+   ,.frm_o(frm_o)
+   ,.fflags_i(fflags_i)
 
    ,.itlb_fill_o(itlb_fill_lo)
    ,.instr_page_fault_o(instr_page_fault_lo)

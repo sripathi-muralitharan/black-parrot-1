@@ -44,6 +44,7 @@ module bp_be_checker_top
    , input [cfg_bus_width_lp-1:0]     cfg_bus_i
    , output [vaddr_width_p-1:0]       cfg_npc_data_o
    , output [dword_width_p-1:0]       cfg_irf_data_o
+   , output [dword_width_p-1:0]       cfg_frf_data_o
 
    // FE cmd interface
    , output [fe_cmd_width_lp-1:0]     fe_cmd_o
@@ -74,8 +75,6 @@ module bp_be_checker_top
    , output                           flush_o
 
    , input                            accept_irq_i
-   , input                            debug_mode_i
-   , input                            single_step_i
    
    //iTLB fill interface
     , input                           itlb_fill_v_i
@@ -146,8 +145,6 @@ bp_be_detector
    ,.mmu_cmd_ready_i(mmu_cmd_ready_i)
    ,.credits_full_i(credits_full_i)
    ,.credits_empty_i(credits_empty_i)
-   ,.debug_mode_i(debug_mode_i)
-   ,.single_step_i(single_step_i)
 
    ,.chk_dispatch_v_o(chk_dispatch_v_o)
    );
@@ -160,6 +157,7 @@ bp_be_scheduler
 
    ,.cfg_bus_i(cfg_bus_i)
    ,.cfg_irf_data_o(cfg_irf_data_o)
+   ,.cfg_frf_data_o(cfg_frf_data_o)
 
    ,.accept_irq_i(accept_irq_i)
    ,.isd_status_o(isd_status)
@@ -168,7 +166,6 @@ bp_be_scheduler
    ,.dispatch_v_i(chk_dispatch_v_o)
    ,.cache_miss_v_i(commit_pkt.cache_miss | commit_pkt.tlb_miss)
    ,.cmt_v_i(commit_pkt.queue_v)
-   ,.debug_mode_i(debug_mode_i)
    ,.suppress_iss_i(suppress_iss_lo)
 
    ,.fe_queue_i(fe_queue_i)

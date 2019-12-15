@@ -27,6 +27,7 @@ module bp_cfg_buffered
    , input [coh_noc_cord_width_p-1:0]   cord_i
    , input [io_noc_did_width_p-1:0]     did_i
    , input [dword_width_p-1:0]          irf_data_i
+   , input [dword_width_p-1:0]          frf_data_i
    , input [vaddr_width_p-1:0]          npc_data_i
    , input [dword_width_p-1:0]          csr_data_i
    , input [1:0]                        priv_data_i
@@ -59,6 +60,7 @@ bp_cfg
    ,.cord_i(cord_i)
    ,.did_i(did_i)
    ,.irf_data_i(irf_data_i)
+   ,.frf_data_i(frf_data_i)
    ,.npc_data_i(npc_data_i)
    ,.csr_data_i(csr_data_i)
    ,.priv_data_i(priv_data_i)

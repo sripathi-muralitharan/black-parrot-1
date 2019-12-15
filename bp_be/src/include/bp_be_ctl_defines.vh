@@ -49,6 +49,33 @@ typedef enum logic [4:0]
 
 typedef enum logic [4:0]
 {
+  e_op_fadd      = 5'b00000
+  ,e_op_fsub     = 5'b00001
+  ,e_op_fmul     = 5'b00010
+  ,e_op_fmin     = 5'b00011
+  ,e_op_fmax     = 5'b00100
+  ,e_op_fmadd    = 5'b00101
+  ,e_op_fmsub    = 5'b00110
+  ,e_op_fnmsub   = 5'b00111
+  ,e_op_fnmadd   = 5'b01000
+  ,e_op_i2f      = 5'b01001
+  ,e_op_iu2f     = 5'b01010
+  ,e_op_fsgnj    = 5'b01011
+  ,e_op_fsgnjn   = 5'b01100
+  ,e_op_fsgnjx   = 5'b01101
+  ,e_op_feq      = 5'b01110
+  ,e_op_flt      = 5'b01111
+  ,e_op_fle      = 5'b10000
+  ,e_op_fclass   = 5'b10001
+  ,e_op_f2i      = 5'b10010
+  ,e_op_f2iu     = 5'b10011
+  ,e_op_f2f      = 5'b11101
+  ,e_op_imvf     = 5'b11110
+  ,e_op_fmvi     = 5'b11111
+} bp_be_fp_fu_op_e;
+
+typedef enum logic [4:0]
+{
   e_csrrw   = 5'b00001
   ,e_csrrs  = 5'b00010
   ,e_csrrc  = 5'b00011
@@ -79,6 +106,7 @@ typedef struct packed
   union packed
   {
     bp_be_int_fu_op_e int_fu_op;
+    bp_be_fp_fu_op_e  fp_fu_op;
     bp_be_mmu_fu_op_e mmu_fu_op;
     bp_be_csr_fu_op_e csr_fu_op;
   }  fu_op;
@@ -114,6 +142,12 @@ typedef enum logic
   ,e_result_from_pc_plus4 = 1'b1
 } bp_be_result_e;
 
+typedef enum logic
+{
+  e_pr_single  = 1'b0
+  ,e_pr_double = 1'b1
+} bp_be_fp_pr_e;
+
 typedef struct packed
 {
   logic                             queue_v;
@@ -134,12 +168,16 @@ typedef struct packed
   logic                             csr_r_v;
   logic                             csr_v;
   logic                             serial_v;
-  logic                             fp_not_int_v;
+  logic                             frs1_v;
+  logic                             frs2_v;
+  logic                             frs3_v;
   logic                             jmp_v;
   logic                             br_v;
   logic                             opw_v;
 
   bp_be_fu_op_s                     fu_op;
+  bp_be_fp_pr_e                     ipr;
+  bp_be_fp_pr_e                     opr;
 
   bp_be_src1_e                      src1_sel;
   bp_be_src2_e                      src2_sel;

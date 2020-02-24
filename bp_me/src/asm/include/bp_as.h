@@ -30,6 +30,12 @@ enum {
   output_format_dbg,
 };
 
+typedef struct {
+  bp_cce_inst_type_e encoding;
+  bp_cce_inst_s      inst;
+} parsed_inst_s;
+
+
 class Assembler
 {
 protected:
@@ -56,11 +62,10 @@ protected:
   char _lowercase(char ch);
 
   // Assembler Helper Functions
-  bp_cce_inst_op_e getOp(const char* op);
-  uint8_t getMinorOp(const char* op);
+  bp_cce_inst_op_e getOp(string &s);
+  uint8_t getMinorOp(string &s);
 
-  bp_cce_inst_src_e parseSrcOpd(string &s);
-  bp_cce_inst_dst_e parseDstOpd(string &s);
+  bp_cce_inst_opd_e parseOpd(string &s);
 
   uint32_t parseImm(string &s, int immSize);
   uint32_t parseCohStImm(string &s);

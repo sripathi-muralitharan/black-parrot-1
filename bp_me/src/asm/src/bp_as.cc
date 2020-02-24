@@ -62,292 +62,294 @@ Assembler::_lowercase(char ch) {
   return ch;
 }
 
-
+// TODO: add popd when supported
+// TODO: add memory operations if supported
 bp_cce_inst_op_e
-Assembler::getOp(const char* op) {
-  if (!strcmp("add", op) || !strcmp("inc", op) || !strcmp("sub", op) || !strcmp("dec", op)
-      || !strcmp("lsh", op) || !strcmp("rsh", op) || !strcmp("and", op) || !strcmp("or", op)
-      || !strcmp("xor", op) || !strcmp("neg", op) || !strcmp("addi", op) || !strcmp("subi", op)
-      || !strcmp("nop", op)) {
+Assembler::getOp(string &s) {
+  if (!s.compare("add") || !s.compare("sub") || !s.compare("lsh") || !s.compare("rsh")
+      || !s.compare("and") || !s.compare("or") || !s.compare("xor") || !s.compare("neg")
+      || !s.compare("addi") || !s.compare("nop") || !s.compare("inc") || !s.compare("subi")
+      || !s.compare("dec") || !s.compare("lshi") || !s.compare("rshi") || !s.compare("not")) {
     return e_op_alu;
-  } else if (!strcmp("bi", op) || !strcmp("beq", op) || !strcmp("bne", op) || !strcmp("bz", op)
-             || !strcmp("bnz", op) || !strcmp("bf", op) || !strcmp("bfz", op) || !strcmp("bqv", op)
-             || !strcmp("blt", op) || !strcmp("ble", op) || !strcmp("bgt", op) || !strcmp("bge", op)
-             || !strcmp("beqi", op) || !strcmp("bneqi", op)
-             || !strcmp("bs", op) || !strcmp("bsz", op) || !strcmp("bsi", op)
-             || !strcmp("bfand", op) || !strcmp("bfnand", op)
-             || !strcmp("bfor", op) || !strcmp("bfnor", op)) {
+  } else if (!s.compare("beq") || !s.compare("bi") || !s.compare("bne")
+             || !s.compare("blt") || !s.compare("bgt") || !s.compare("ble") || !s.compare("bge")
+             || !s.compare("bs") || !s.compare("bss")
+             || !s.compare("beqi") || !s.compare("bz") || !s.compare("bneqi") || !s.compare("bnz")
+             || !s.compare("bsi")) {
     return e_op_branch;
-  } else if (!strcmp("mov", op) || !strcmp("movi", op) || !strcmp("movf", op) || !strcmp("movsg", op)
-             || !strcmp("movgs", op) || !strcmp("movis", op)) {
-    return e_op_move;
-  } else if (!strcmp("sf", op) || !strcmp("sfz", op) || !strcmp("andf", op) || !strcmp("orf", op)) {
+  } else if (!s.compare("mov") || !s.compare("movsg") || !s.compare("movgs") || !s.compare("ldflags")
+             || !s.compare("movfg") || !s.compare("movgf")
+             || !s.compare("movpg") || !s.compare("movgp")
+             || !s.compare("movi") || !s.compare("movis")
+             || !s.compare("ldflagsi") || !s.compare("clf") || !s.compare("clm")) {
+    return e_op_reg_data;
+  } else if (!s.compare("sf") || !s.compare("sfz") || !s.compare("andf") || !s.compare("orf")
+             || !s.compare("nandf") || !s.compare("norf") || !s.compare("notf")
+             || !s.compare("bf") || !s.compare("bfz") || !s.compare("bnz") || !s.compare("bfnot")) {
     return e_op_flag;
-  } else if (!strcmp("rdp", op) || !strcmp("rdw", op) || !strcmp("rde", op)
-             || !strcmp("wdp", op) || !strcmp("wde", op) || !strcmp("wds", op)
-             || !strcmp("gad", op)) {
+  } else if (!s.compare("rdp") || !s.compare("rdw") || !s.compare("rde")
+             || !s.compare("wdp") || !s.compare("clp") || !s.compare("clr")
+             || !s.compare("wde") || !s.compare("cls") || !s.compare("gad")) {
     return e_op_dir;
-  } else if (!strcmp("stall", op) || !strcmp("clm", op)
-             || !strcmp("fence", op)) {
-    return e_op_misc;
-  } else if (!strcmp("wfq", op) || !strcmp("pushq", op) || !strcmp("popq", op)
-             || !strcmp("poph", op) || !strcmp("specq", op) || !strcmp("inv", op)) {
+  } else if (!s.compare("wfq") || !s.compare("pushq") || !s.compare("pushqc") || !s.compare("popq")
+             || !s.compare("poph") || !s.compare("specq") || !s.compare("inv")) {
     return e_op_queue;
   } else {
-    printf("Bad Op: %s\n", op);
+    printf("Bad Op: %s\n", s.c_str());
     exit(-1);
   }
 }
 
 uint8_t
-Assembler::getMinorOp(const char* op) {
-  if (!strcmp("add", op) || !strcmp("inc", op) || !strcmp("addi", op)
-      || !strcmp("nop", op)) {
-    return e_add;
-  } else if (!strcmp("sub", op) || !strcmp("dec", op) || !strcmp("subi", op)) {
-    return e_sub;
-  } else if (!strcmp("lsh", op)) {
-    return e_lsh;
-  } else if (!strcmp("rsh", op)) {
-    return e_rsh;
-  } else if (!strcmp("and", op)) {
-    return e_and;
-  } else if (!strcmp("or", op)) {
-    return e_or;
-  } else if (!strcmp("xor", op)) {
-    return e_xor;
-  } else if (!strcmp("neg", op)) {
-    return e_neg;
-  } else if (!strcmp("bi", op)) {
-    return e_bi;
-  } else if (!strcmp("beq", op) || !strcmp("bz", op) || !strcmp("beqi", op)) {
-    return e_beq;
-  } else if (!strcmp("bqv", op)) {
-    return e_bqv;
-  } else if (!strcmp("bs", op) || !strcmp("bsz", op) || !strcmp("bsi", op)) {
-    return e_bs;
-  } else if (!strcmp("bf", op) || !strcmp("bfz", op)) {
-    return e_bf;
-  } else if (!strcmp("bfand", op) || !strcmp("bfnand", op)) {
-    return e_bf;
-  } else if (!strcmp("bfor", op) || !strcmp("bfnor", op)) {
-    return e_bf;
-  } else if (!strcmp("bne", op) || !strcmp("bnz", op) || !strcmp("bneqi", op)) {
-    return e_bne;
-  } else if (!strcmp("blt", op) || !strcmp("bgt", op)) {
-    return e_blt;
-  } else if (!strcmp("ble", op) || !strcmp("bge", op)) {
-    return e_ble;
-  } else if (!strcmp("mov", op)) {
-    return e_mov;
-  } else if (!strcmp("movi", op)) {
-    return e_movi;
-  } else if (!strcmp("movf", op)) {
-    return e_movf;
-  } else if (!strcmp("movsg", op)) {
-    return e_movsg;
-  } else if (!strcmp("movgs", op)) {
-    return e_movgs;
-  } else if (!strcmp("movis", op)) {
-    return e_movis;
-  } else if (!strcmp("sf", op) || !strcmp("sfz", op)) {
-    return e_sf;
-  } else if (!strcmp("andf", op)) {
-    return e_andf;
-  } else if (!strcmp("orf", op)) {
-    return e_orf;
-  } else if (!strcmp("rdp", op)) {
-    return e_rdp;
-  } else if (!strcmp("rdw", op)) {
-    return e_rdw;
-  } else if (!strcmp("rde", op)) {
-    return e_rde;
-  } else if (!strcmp("wdp", op)) {
-    return e_wdp;
-  } else if (!strcmp("wde", op)) {
-    return e_wde;
-  } else if (!strcmp("wds", op)) {
-    return e_wds;
-  } else if (!strcmp("gad", op)) {
-    return e_gad;
-  } else if (!strcmp("stall", op)) {
-    return e_stall;
-  } else if (!strcmp("clm", op)) {
-    return e_clm;
-  } else if (!strcmp("fence", op)) {
-    return e_fence;
-  } else if (!strcmp("wfq", op)) {
-    return e_wfq;
-  } else if (!strcmp("pushq", op)) {
-    return e_pushq;
-  } else if (!strcmp("popq", op)) {
-    return e_popq;
-  } else if (!strcmp("poph", op)) {
-    return e_poph;
-  } else if (!strcmp("specq", op)) {
-    return e_specq;
-  } else if (!strcmp("inv", op)) {
-    return e_inv;
+Assembler::getMinorOp(string &s) {
+  // ALU
+  if (!s.compare("add")) {
+    return e_add_op;
+  } else if (!s.compare("sub")) {
+    return e_sub_op;
+  } else if (!s.compare("lsh")) {
+    return e_lsh_op;
+  } else if (!s.compare("rsh")) {
+    return e_rsh_op;
+  } else if (!s.compare("and")) {
+    return e_and_op;
+  } else if (!s.compare("or")) {
+    return e_or_op;
+  } else if (!s.compare("xor")) {
+    return e_xor_op;
+  } else if (!s.compare("neg")) {
+    return e_neg_op;
+  } else if (!s.compare("inc") || !s.compare("addi")|| !s.compare("nop")) {
+    return e_addi_op;
+  } else if (!s.compare("dec") || !s.compare("subi")) {
+    return e_subi_op;
+  } else if (!s.compare("lshi")) {
+    return e_lshi_op;
+  } else if (!s.compare("rshi")) {
+    return e_rshi_op;
+  } else if (!s.compare("not")) {
+    return e_not_op;
+
+  // Branch
+  } else if (!s.compare("beq") || !s.compare("bi")) {
+    return e_beq_op;
+  } else if (!s.compare("bne")) {
+    return e_bne_op;
+  } else if (!s.compare("blt") || !s.compare("bgt")) {
+    return e_blt_op;
+  } else if (!s.compare("ble") || !s.compare("bge")) {
+    return e_ble_op;
+  } else if (!s.compare("beqi") || !s.compare("bz")) {
+    return e_beqi_op;
+  } else if (!s.compare("bneqi") || !s.compare("bnz")) {
+    return e_bneqi_op;
+  } else if (!s.compare("bsi")) {
+    return e_bsi_op;
+
+  // Reg Data / Move
+  } else if (!s.compare("mov")) {
+    return e_mov_op;
+  } else if (!s.compare("movsg")) {
+    return e_movsg_op;
+  } else if (!s.compare("movgs") || !s.compare("ldflags")) {
+    return e_movgs_op;
+  } else if (!s.compare("movfg")) {
+    return e_movfg_op;
+  } else if (!s.compare("movgf")) {
+    return e_movgf_op;
+  } else if (!s.compare("movpg")) {
+    return e_movpg_op;
+  } else if (!s.compare("movgp")) {
+    return e_movgp_op;
+  } else if (!s.compare("movi")) {
+    return e_movi_op;
+  } else if (!s.compare("movis") || !s.compare("ldflagsi") || !s.compare("clf")) {
+    return e_movis_op;
+  } else if (!s.compare("clm")) {
+    return e_clm_op;
+
+  // Flag
+  } else if (!s.compare("sf") || !s.compare("sfz")) {
+    return e_sf_op;
+  } else if (!s.compare("andf")) {
+    return e_andf_op;
+  } else if (!s.compare("orf")) {
+    return e_orf_op;
+  } else if (!s.compare("nandf")) {
+    return e_nandf_op;
+  } else if (!s.compare("norf")) {
+    return e_norf_op;
+  } else if (!s.compare("andf")) {
+    return e_andf_op;
+  } else if (!s.compare("notf")) {
+    return e_notf_op;
+  } else if (!s.compare("bf")) {
+    return e_bf_op;
+  } else if (!s.compare("bfz")) {
+    return e_bfz_op;
+  } else if (!s.compare("bfnz")) {
+    return e_bfnz_op;
+  } else if (!s.compare("bfnot")) {
+    return e_bfnot_op;
+
+  // Directory
+  } else if (!s.compare("rdp")) {
+    return e_rdp_op;
+  } else if (!s.compare("rdw")) {
+    return e_rdw_op;
+  } else if (!s.compare("rde")) {
+    return e_rde_op;
+  } else if (!s.compare("wdp")) {
+    return e_wdp_op;
+  } else if (!s.compare("clp")) {
+    return e_clp_op;
+  } else if (!s.compare("clr")) {
+    return e_clr_op;
+  } else if (!s.compare("wde")) {
+    return e_wde_op;
+  } else if (!s.compare("wds")) {
+    return e_wds_op;
+  } else if (!s.compare("gad")) {
+    return e_gad_op;
+
+  // Queue
+  } else if (!s.compare("wfq")) {
+    return e_wfq_op;
+  } else if (!s.compare("pushq") || !s.compare("pushqc")) {
+    return e_pushq_op;
+  } else if (!s.compare("popq")) {
+    return e_popq_op;
+  } else if (!s.compare("poph")) {
+    return e_poph_op;
+  } else if (!s.compare("specq")) {
+    return e_specq_op;
+  } else if (!s.compare("inv")) {
+    return e_inv_op;
   } else {
-    printf("Bad Minor Op: %s\n", op);
+    printf("Bad Minor Op: %s\n", s.c_str());
     exit(-1);
   }
 }
 
-bp_cce_inst_src_e
-Assembler::parseSrcOpd(string &s) {
+bp_cce_inst_opd_e
+Assembler::parseOpd(string &s) {
+  // GPR
   if (!s.compare("r0")) {
-    return e_src_r0;
+    return e_opd_r0;
   } else if (!s.compare("r1")) {
-    return e_src_r1;
+    return e_opd_r1;
   } else if (!s.compare("r2")) {
-    return e_src_r2;
+    return e_opd_r2;
   } else if (!s.compare("r3")) {
-    return e_src_r3;
+    return e_opd_r3;
   } else if (!s.compare("r4")) {
-    return e_src_r4;
+    return e_opd_r4;
   } else if (!s.compare("r5")) {
-    return e_src_r5;
+    return e_opd_r5;
   } else if (!s.compare("r6")) {
-    return e_src_r6;
+    return e_opd_r6;
   } else if (!s.compare("r7")) {
-    return e_src_r7;
-  } else if (!s.compare("shhitr0")) {
-    return e_src_sharers_hit_r0;
-  } else if (!s.compare("shwayr0")) {
-    return e_src_sharers_way_r0;
-  } else if (!s.compare("shstr0")) {
-    return e_src_sharers_state_r0;
+    return e_opd_r7;
+
+  // Flags
+  } else if (!s.compare("rqf")) {
+    return e_opd_rqf;
+  } else if (!s.compare("ucf")) {
+    return e_opd_ucf;
+  } else if (!s.compare("nerf")) {
+    return e_opd_nerf;
+  } else if (!s.compare("ldf")) {
+    return e_opd_ldf;
+  } else if (!s.compare("pf")) {
+    return e_opd_pf;
+  } else if (!s.compare("lef")) {
+    return e_opd_lef;
+  } else if (!s.compare("cf")) {
+    return e_opd_cf;
+  } else if (!s.compare("cef")) {
+    return e_opd_cef;
+  } else if (!s.compare("cof")) {
+    return e_opd_cof;
+  } else if (!s.compare("cdf")) {
+    return e_opd_cdf;
+  } else if (!s.compare("tf")) {
+    return e_opd_tf;
+  } else if (!s.compare("rf")) {
+    return e_opd_rf;
+  } else if (!s.compare("uf")) {
+    return e_opd_uf;
+  } else if (!s.compare("if")) {
+    return e_opd_if;
+  } else if (!s.compare("nwbf")) {
+    return e_opd_nwbf;
+  } else if (!s.compare("sf")) {
+    return e_opd_sf;
+
+  // Special
   } else if (!s.compare("reqlce")) {
-    return e_src_req_lce;
-  } else if (!s.compare("nextcohstate")) {
-    return e_src_next_coh_state;
-  } else if (!s.compare("numlce")) {
-    return e_src_num_lce;
+    return e_opd_req_lce;
   } else if (!s.compare("reqaddr")) {
-    return e_src_req_addr;
-  } else if (!s.compare("numcce")) {
-    return e_src_num_cce;
-  } else if (!s.compare("lceassoc")) {
-    return e_src_lce_assoc;
-  } else if (!s.compare("numwg")) {
-    return e_src_num_wg;
-  } else if (!s.compare("lcereq")) {
-    return e_src_lce_req_v;
-  } else if (!s.compare("memresp")) {
-    return e_src_mem_resp_v;
-  } else if (!s.compare("pending")) {
-    return e_src_pending_v;
-  } else if (!s.compare("lceresp")) {
-    return e_src_lce_resp_v;
-  } else if (!s.compare("lceresptype")) {
-    return e_src_lce_resp_type;
-  } else if (!s.compare("cceid")) {
-    return e_src_cce_id;
-  } else if (!s.compare("rqf")) {
-    return e_src_rqf;
-  } else if (!s.compare("ucf")) {
-    return e_src_ucf;
-  } else if (!s.compare("nerf")) {
-    return e_src_nerf;
-  } else if (!s.compare("ldf")) {
-    return e_src_ldf;
-  } else if (!s.compare("pf")) {
-    return e_src_pf;
-  } else if (!s.compare("lef")) {
-    return e_src_lef;
-  } else if (!s.compare("cf")) {
-    return e_src_cf;
-  } else if (!s.compare("cef")) {
-    return e_src_cef;
-  } else if (!s.compare("cof")) {
-    return e_src_cof;
-  } else if (!s.compare("cdf")) {
-    return e_src_cdf;
-  } else if (!s.compare("tf")) {
-    return e_src_tf;
-  } else if (!s.compare("rf")) {
-    return e_src_rf;
-  } else if (!s.compare("uf")) {
-    return e_src_uf;
-  } else if (!s.compare("if")) {
-    return e_src_if;
-  } else if (!s.compare("nwbf")) {
-    return e_src_nwbf;
-  } else if (!s.compare("sf")) {
-    return e_src_sf;
-  } else if (!s.compare("bfand")) {
-    return e_src_flag_and;
-  } else if (!s.compare("bfnand")) {
-    return e_src_flag_nand;
-  } else if (!s.compare("bfor")) {
-    return e_src_flag_or;
-  } else if (!s.compare("bfnor")) {
-    return e_src_flag_nor;
-  } else {
-    return e_src_imm;
-  }
-}
+    return e_opd_req_addr;
+  } else if (!s.compare("reqway")) {
+    return e_opd_req_way;
+  } else if (!s.compare("lruaddr")) {
+    return e_opd_lru_addr;
+  } else if (!s.compare("lruway")) {
+    return e_opd_lru_way;
+  } else if (!s.compare("ownerlce")) {
+    return e_opd_owner_lce;
+  } else if (!s.compare("ownerway")) {
+    return e_opd_owner_way;
+  } else if (!s.compare("nextcohstate")) {
+    return e_opd_next_coh_state;
+  } else if (!s.compare("flags")) {
+    return e_opd_flags;
+  } else if (!s.compare("ucreqsize")) {
+    return e_opd_uc_req_size;
+  } else if (!s.compare("datalength")) {
+    return e_opd_data_length;
 
-bp_cce_inst_dst_e
-Assembler::parseDstOpd(string &s) {
-  if (!s.compare("r0")) {
-    return e_dst_r0;
-  } else if (!s.compare("r1")) {
-    return e_dst_r1;
-  } else if (!s.compare("r2")) {
-    return e_dst_r2;
-  } else if (!s.compare("r3")) {
-    return e_dst_r3;
-  } else if (!s.compare("r4")) {
-    return e_dst_r4;
-  } else if (!s.compare("r5")) {
-    return e_dst_r5;
-  } else if (!s.compare("r6")) {
-    return e_dst_r6;
-  } else if (!s.compare("r7")) {
-    return e_dst_r7;
-  } else if (!s.compare("nextcohst")) {
-    return e_dst_next_coh_state;
+  } else if (!s.compare("flagsandmask")) {
+    return e_opd_flags_and_mask;
+
+  } else if (!s.compare("shhit")) {
+    return e_opd_sharers_hit;
+  } else if (!s.compare("shway")) {
+    return e_opd_sharers_way;
+  } else if (!s.compare("shstate")) {
+    return e_opd_sharers_state;
+
+  // Params
+  } else if (!s.compare("cceid")) {
+    return e_opd_cce_id;
   } else if (!s.compare("numlce")) {
-    return e_dst_num_lce;
-  } else if (!s.compare("cohst")) {
-    return e_dst_coh_state;
-  } else if (!s.compare("rqf")) {
-    return e_dst_rqf;
-  } else if (!s.compare("ucf")) {
-    return e_dst_ucf;
-  } else if (!s.compare("nerf")) {
-    return e_dst_nerf;
-  } else if (!s.compare("ldf")) {
-    return e_dst_ldf;
-  } else if (!s.compare("pf")) {
-    return e_dst_pf;
-  } else if (!s.compare("lef")) {
-    return e_dst_lef;
-  } else if (!s.compare("cf")) {
-    return e_dst_cf;
-  } else if (!s.compare("cef")) {
-    return e_dst_cef;
-  } else if (!s.compare("cof")) {
-    return e_dst_cof;
-  } else if (!s.compare("cdf")) {
-    return e_dst_cdf;
-  } else if (!s.compare("tf")) {
-    return e_dst_tf;
-  } else if (!s.compare("rf")) {
-    return e_dst_rf;
-  } else if (!s.compare("uf")) {
-    return e_dst_uf;
-  } else if (!s.compare("if")) {
-    return e_dst_if;
-  } else if (!s.compare("nwbf")) {
-    return e_dst_nwbf;
-  } else if (!s.compare("sf")) {
-    return e_dst_sf;
+    return e_opd_num_lce;
+  } else if (!s.compare("numcce")) {
+    return e_opd_num_cce;
+  } else if (!s.compare("numwg")) {
+    return e_opd_num_wg;
+  } else if (!s.compare("autofwdmsg")) {
+    return e_opd_auto_fwd_msg;
+  } else if (!s.compare("cohstate")) {
+    return e_opd_coh_state_default;
+
+  // Queue
+  } else if (!s.compare("memresp")) {
+    return e_opd_mem_resp_v;
+  } else if (!s.compare("lceresp")) {
+    return e_opd_lce_resp_v;
+  } else if (!s.compare("pending")) {
+    return e_opd_pending_v;
+  } else if (!s.compare("lcereq")) {
+    return e_opd_lce_req_v;
+  } else if (!s.compare("lceresptype")) {
+    return e_opd_lce_resp_type;
+  } else if (!s.compare("memresptype")) {
+    return e_opd_mem_resp_type;
+
+  // Default
   } else {
-    printf("Unknown destination operand: %s\n", s.c_str());
-    exit(-1);
+    return 0;
   }
 }
 
@@ -398,13 +400,12 @@ Assembler::parseCohStImm(string &s) {
 void
 Assembler::parseALU(vector<string> *tokens, int n, bp_cce_inst_s *inst) {
   if (tokens->size() == 1) { // nop - translates to addi r0 = r0 + 0
-    inst->type_u.alu_op_s.src_a = e_src_r0;
-    inst->type_u.alu_op_s.src_b = e_src_imm;
-    inst->type_u.alu_op_s.imm = 0;
-    inst->type_u.alu_op_s.dst = e_dst_r0;
-  } else if (tokens->size() == 2) { // inc, dec, neg
-    inst->type_u.alu_op_s.src_a = parseSrcOpd(tokens->at(1));
-    inst->type_u.alu_op_s.dst = parseDstOpd(tokens->at(1));
+    inst->type_u.itype.src_a = e_opd_r0;
+    inst->type_u.itype.imm = 0;
+    inst->type_u.itype.dst = e_opd_r0;
+  } else if (tokens->size() == 2) { // inc, dec, neg, not - same dst as src
+    inst->type_u.alu_op_s.src_a = parseOpd(tokens->at(1));
+    inst->type_u.alu_op_s.dst = parseOpd(tokens->at(1));
     if (inst->minor_op == e_inc || inst->minor_op == e_dec) {
       inst->type_u.alu_op_s.src_b = e_src_imm;
       inst->type_u.alu_op_s.imm = 1;
@@ -455,6 +456,8 @@ Assembler::getBranchTarget(string &target_str) {
   }
 }
 
+// TODO: all branch operations must be tagged with a prediction bit
+// or, optionally tagged (p=N)?
 void
 Assembler::parseBranch(vector<string> *tokens, int n, bp_cce_inst_s *inst) {
   // Branch multi-flag operation
@@ -1070,17 +1073,20 @@ Assembler::parseQueue(vector<string> *tokens, int n, bp_cce_inst_s *inst) {
 }
 
 void
-Assembler::parseTokens(vector<string> *tokens, int n, bp_cce_inst_s *inst) {
+Assembler::parseTokens(vector<string> *tokens, int n, parsed_inst_s *parsed_inst) {
+
+  bp_cce_inst_s *inst = &(parsed_inst->inst);
 
   // All instructions
-  inst->op = getOp(tokens->at(0).c_str());
-  inst->minor_op = getMinorOp(tokens->at(0).c_str());
+  inst->op = getOp(tokens->at(0));
+  inst->minor_op = getMinorOp(tokens->at(0));
 
   switch (inst->op) {
     case e_op_alu:
       parseALU(tokens, n, inst);
       break;
     case e_op_branch:
+      inst->branch = 1;
       parseBranch(tokens, n, inst);
       break;
     case e_op_move:
@@ -1147,12 +1153,12 @@ Assembler::tokenizeAndLabel() {
 void
 Assembler::assemble() {
   // Transform tokenized instructions into instruction struct, then write to output
-  bp_cce_inst_s inst;
+  parsed_inst_s parsed_inst;
   unsigned int i = 0;
   while (i < tokens.size()) {
     inst = {};
-    parseTokens(tokens.at(i), num_tokens.at(i), &inst);
-    writeInstToOutput(&inst, (uint16_t)i, tokens.at(i)->at(0));
+    parseTokens(tokens.at(i), num_tokens.at(i), &parsed_inst);
+    writeInstToOutput(&parsed_inst, (uint16_t)i, tokens.at(i)->at(0));
     i++;
   }
 }
@@ -1260,97 +1266,100 @@ Assembler::printPad(int bits, stringstream &ss) {
 }
 
 void
-Assembler::writeInstToOutput(bp_cce_inst_s *inst, uint16_t line_number, string &s) {
+Assembler::writeInstToOutput(parsed_inst_s *parsed_inst, uint16_t line_number, string &s) {
 
   stringstream ss;
 
-  printShortField(inst->op, bp_cce_inst_op_width, ss);
-  printShortField(inst->minor_op, bp_cce_inst_minor_op_width, ss);
+  bp_cce_inst_s *inst = &(parsed_inst->inst);
 
-  switch (inst->op) {
-    case e_op_alu:
-      printShortField(inst->type_u.alu_op_s.dst, bp_cce_inst_dst_width, ss);
-      printShortField(inst->type_u.alu_op_s.src_a, bp_cce_inst_src_width, ss);
-      printShortField(inst->type_u.alu_op_s.src_b, bp_cce_inst_src_width, ss);
-      printLongField(inst->type_u.alu_op_s.imm, bp_cce_inst_imm16_width, ss);
-      printPad(bp_cce_inst_alu_pad, ss);
+  printShortField(inst->predict_taken, 1, ss);
+  printShortField(inst->branch, 1, ss);
+
+  switch (parsed_inst->encoding) {
+    case e_rtype:
+      printPad(bp_cce_inst_rtype_pad, ss);
+      printShortField(inst->type_u.rtype.src_b, bp_cce_inst_opd_width, ss);
+      printShortField(inst->type_u.rtype.dst, bp_cce_inst_opd_width, ss);
+      printShortField(inst->type_u.rtype.src_a, bp_cce_inst_opd_width, ss);
       break;
-    case e_op_branch:
-      printShortField(inst->type_u.branch_op_s.src_a, bp_cce_inst_src_width, ss);
-      printShortField(inst->type_u.branch_op_s.src_b, bp_cce_inst_src_width, ss);
-      printLongField(inst->type_u.branch_op_s.target, bp_cce_inst_addr_width, ss);
-      printLongField(inst->type_u.branch_op_s.imm, bp_cce_inst_imm16_width, ss);
-      printPad(bp_cce_inst_branch_pad, ss);
+    case e_itype:
+      printLongField(inst->type_u.itype.imm, bp_cce_inst_imm16_width, ss);
+      printPad(bp_cce_inst_itype_pad, ss);
+      printShortField(inst->type_u.itype.dst, bp_cce_inst_opd_width, ss);
+      printShortField(inst->type_u.itype.src_a, bp_cce_inst_opd_width, ss);
       break;
-    case e_op_move:
-      printShortField(inst->type_u.mov_op_s.dst, bp_cce_inst_dst_width, ss);
-      if (inst->minor_op == e_movi || inst->minor_op == e_movis) {
-        printField(inst->type_u.mov_op_s.op.movi.imm, bp_cce_inst_imm32_width, ss);
-      } else {
-        printShortField(inst->type_u.mov_op_s.op.mov.src, bp_cce_inst_src_width, ss);
-        printPad(bp_cce_inst_mov_bits_pad, ss);
-      }
-      printPad(bp_cce_inst_mov_pad, ss);
+    case e_btype:
+      printLongField(inst->type_u.btype.target, bp_cce_inst_addr_width, ss);
+      printPad(bp_cce_inst_btype_pad, ss);
+      printShortField(inst->type_u.btype.src_b, bp_cce_inst_opd_width, ss);
+      printPad(bp_cce_inst_imm4_width, ss);
+      printShortField(inst->type_u.btype.src_a, bp_cce_inst_opd_width, ss);
       break;
-    case e_op_flag:
-      printShortField(inst->type_u.flag_op_s.dst, bp_cce_inst_dst_width, ss);
-      printShortField(inst->type_u.flag_op_s.src_a, bp_cce_inst_src_width, ss);
-      printShortField(inst->type_u.flag_op_s.src_b, bp_cce_inst_src_width, ss);
-      printShortField(inst->type_u.flag_op_s.val, 1, ss);
-      printPad(bp_cce_inst_flag_pad, ss);
+    case e_bitype:
+      printLongField(inst->type_u.bitype.target, bp_cce_inst_addr_width, ss);
+      printPad(bp_cce_inst_bitype_pad, ss);
+      printLongField(inst->type_u.bitype.imm, bp_cce_inst_imm8_width, ss);
+      printShortField(inst->type_u.bitype.src_a, bp_cce_inst_opd_width, ss);
       break;
-    case e_op_dir:
-      if (inst->minor_op == e_gad) {
-        printPad(bp_cce_inst_type_u_width, ss);
-      } else {
-        printShortField(inst->type_u.dir_op_s.dir_way_group_sel, bp_cce_inst_dir_way_group_sel_width, ss);
-        printShortField(inst->type_u.dir_op_s.dir_lce_sel, bp_cce_inst_dir_lce_sel_width, ss);
-        printShortField(inst->type_u.dir_op_s.dir_way_sel, bp_cce_inst_dir_way_sel_width, ss);
-        printShortField(inst->type_u.dir_op_s.dir_coh_state_sel, bp_cce_inst_dir_coh_state_sel_width, ss);
-        printShortField(inst->type_u.dir_op_s.dir_tag_sel, bp_cce_inst_dir_tag_sel_width, ss);
-        printShortField(inst->type_u.dir_op_s.state, bp_cce_coh_bits, ss);
-        printShortField(inst->type_u.dir_op_s.pending, 1, ss);
-        printShortField(inst->type_u.dir_op_s.dst, bp_cce_inst_dst_width, ss);
-        printPad(bp_cce_inst_dir_pad, ss);
-      }
+    case e_bftype:
+      printLongField(inst->type_u.bftype.target, bp_cce_inst_addr_width, ss);
+      printLongField(inst->type_u.bftype.imm, bp_cce_inst_imm16_width, ss);
       break;
-    case e_op_misc:
-      printPad(bp_cce_inst_misc_pad, ss);
+    case e_stype:
+      printPad(bp_cce_inst_stype_pad, ss);
+      printShortField(inst->type_u.stype.state, bp_coh_bits, ss);
+      printShortField(inst->type_u.stype.addr_sel, bp_cce_inst_mux_sel_addr_width, ss);
+      printShortField(inst->type_u.stype.dst, bp_cce_inst_opd_width, ss);
+      printShortField(inst->type_u.stype.cmd, bp_cce_inst_spec_op_width, ss);
       break;
-    case e_op_queue:
-      if (inst->minor_op == e_wfq) {
-        printShortField(inst->type_u.queue_op_s.op.wfq.qmask, bp_cce_num_src_q, ss);
-        printPad(bp_cce_inst_wfq_pad, ss);
-      } else if (inst->minor_op == e_pushq) {
-        printShortField(inst->type_u.queue_op_s.op.pushq.dst_q, bp_cce_inst_dst_q_sel_width, ss);
-        if (inst->type_u.queue_op_s.op.pushq.dst_q == e_dst_q_lce_cmd) {
-          printShortField(inst->type_u.queue_op_s.op.pushq.cmd.lce_cmd, bp_lce_cmd_type_width, ss);
-        } else if (inst->type_u.queue_op_s.op.pushq.dst_q == e_dst_q_mem_cmd) {
-          printShortField(inst->type_u.queue_op_s.op.pushq.cmd.mem_cmd, bp_cce_mem_msg_type_width, ss);
-        }
-        printShortField(inst->type_u.queue_op_s.op.pushq.lce_cmd_lce_sel, bp_cce_inst_lce_cmd_lce_sel_width, ss);
-        printShortField(inst->type_u.queue_op_s.op.pushq.lce_cmd_addr_sel, bp_cce_inst_lce_cmd_addr_sel_width, ss);
-        printShortField(inst->type_u.queue_op_s.op.pushq.lce_cmd_way_sel, bp_cce_inst_lce_cmd_way_sel_width, ss);
-        printShortField(inst->type_u.queue_op_s.op.pushq.mem_cmd_addr_sel, bp_cce_inst_mem_cmd_addr_sel_width, ss);
-        printShortField(inst->type_u.queue_op_s.op.pushq.speculative, 1, ss);
-        printPad(bp_cce_inst_pushq_pad, ss);
-      } else if (inst->minor_op == e_popq || inst->minor_op == e_poph) {
-        printShortField(inst->type_u.queue_op_s.op.popq.src_q, bp_cce_inst_src_q_sel_width, ss);
-        printShortField(inst->type_u.queue_op_s.op.popq.dst, bp_cce_inst_dst_width, ss);
-        printPad(bp_cce_inst_popq_pad, ss);
-      } else if (inst->minor_op == e_specq) {
-        printShortField(inst->type_u.queue_op_s.op.specq.cmd, bp_cce_inst_spec_cmd_width, ss);
-        printShortField(inst->type_u.queue_op_s.op.specq.state, bp_cce_coh_bits, ss);
-        printPad(bp_cce_inst_specq_pad, ss);
-      } else if (inst->minor_op == e_inv) {
-        printPad(bp_cce_inst_type_u_width, ss);
-      }
+    case e_dptype:
+      printPad(bp_cce_inst_dptype_pad, ss);
+      printShortField(inst->type_u.dptype.pending, 1, ss);
+      printShortField(inst->type_u.dptype.dst, bp_cce_inst_opd_width, ss);
+      printShortField(inst->type_u.dptype.addr_sel, bp_cce_inst_mux_sel_addr_width, ss);
+      break;
+    case e_dwtype:
+      printPad(bp_cce_inst_dwtype_pad, ss);
+      printShortField(inst->type_u.dwtype.state, bp_coh_bits, ss);
+      printShortField(inst->type_u.dwtype.way_sel, bp_cce_inst_mux_sel_way_width, ss);
+      printShortField(inst->type_u.dwtype.lce_sel, bp_cce_inst_mux_sel_lce_width, ss);
+      printShortField(inst->type_u.dwtype.state_sel, bp_cce_inst_mux_sel_coh_state_width, ss);
+      printShortField(inst->type_u.dwtype.addr_sel, bp_cce_inst_mux_sel_addr_width, ss);
+      break;
+    case e_drtype:
+      printPad(bp_cce_inst_drtype_pad, ss);
+      printShortField(inst->type_u.drtype.lru_way_sel, bp_cce_inst_mux_sel_way_width, ss);
+      printShortField(inst->type_u.drtype.way_sel, bp_cce_inst_mux_sel_way_width, ss);
+      printShortField(inst->type_u.drtype.lce_sel, bp_cce_inst_mux_sel_lce_width, ss);
+      printShortField(inst->type_u.drtype.dst, bp_cce_inst_opd_width, ss);
+      printShortField(inst->type_u.drtype.addr_sel, bp_cce_inst_mux_sel_addr_width, ss);
+      break;
+    case e_popq:
+      printShortField(inst->type_u.popq.write_pending, 1, ss);
+      printPad(bp_cce_inst_popq_pad, ss);
+      printShortField(inst->type_u.popq.dst, bp_cce_inst_opd_width, ss);
+      printPad(bp_cce_inst_imm2_width, ss);
+      printShortField(inst->type_u.popq.src_q, bp_cce_inst_src_q_sel_width, ss);
+      break;
+    case e_pushq:
+      printShortField(inst->type_u.pushq.write_pending, 1, ss);
+      printShortField(inst->type_u.pushq.way_or_length.way_sel, bp_cce_inst_mux_sel_way_width, ss);
+      printShortField(inst->type_u.pushq.src_a, bp_cce_inst_opd_width, ss);
+      printShortField(inst->type_u.pushq.lce_sel, bp_cce_inst_mux_sel_lce_width, ss);
+      printShortField(inst->type_u.pushq.addr_sel, bp_cce_inst_mux_sel_addr_width, ss);
+      printShortField(inst->type_u.pushq.cmd.lce_cmd, bp_lce_cmd_type_width, ss);
+      printShortField(inst->type_u.pushq.spec, 1, ss);
+      printShortField(inst->type_u.pushq.custom, 1, ss);
+      printShortField(inst->type_u.pushq.dst_q, bp_cce_inst_dst_q_sel_width, ss);
       break;
     default:
       printf("Error parsing instruction\n");
       printf("line: %d\n", line_number);
       exit(-1);
   }
+
+  printShortField(inst->minor_op, bp_cce_inst_minor_op_width, ss);
+  printShortField(inst->op, bp_cce_inst_op_width, ss);
 
   switch (output_format) {
     case  output_format_ascii_binary:

@@ -1,6 +1,5 @@
 ###
 
-BP_INC_DIR=$(abspath ../include/c)
 INC_DIR=$(abspath ./include)
 SRC_DIR=$(abspath ./src)
 
@@ -9,7 +8,7 @@ BSG_MEM_DIR=$(abspath ../../../external/basejump_stl/bsg_mem)
 CXX=g++
 COMMON_CFLAGS=-Wall -Wno-switch -Wno-format -Wno-unused-function
 CXXFLAGS=-g -std=c++11 $(COMMON_CFLAGS)
-CXXFLAGS +=-I$(BP_INC_DIR) -I$(INC_DIR)
+CXXFLAGS +=-I$(INC_DIR)
 
 LD=g++
 LFLAGS=-g $(COMMON_FLAGS)

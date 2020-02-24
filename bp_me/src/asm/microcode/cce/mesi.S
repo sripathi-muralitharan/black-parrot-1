@@ -1,6 +1,14 @@
 # This microcode uses EI protocol with LCE transfers enabled
 # The CCE process requests sequentially, and waits for all memory responses
 
+
+# TODO: in microcode, specify address select for specq instructions
+# reads previously used memory response address
+# writes used mshr.paddr
+
+# TODO: pushq and popq commands need to specify "wp" if they should write pending bit
+
+
 #include "microcode.h"
 
 # send sync messages
@@ -28,7 +36,8 @@ poph lceReq
 bf ucf uncached_req
 rdp req
 bf pf ready
-popq lceReq
+# TODO: decrement pending bit here (wp)
+popq lceReq wp
 rdw req req req
 gad
 # fall through
@@ -57,7 +66,8 @@ replace: pushq lceCmd WB req lru lru
 replacement_poph: poph lceResp r0
 beqi r0 COH_ACK replacement_poph
 bf nwbf complete_replacement
-pushq memCmd MEM_CMD_WB lru
+# TODO: increment pending bit
+pushq memCmd MEM_CMD_WB lru wp
 popq lceResp r0
 # replacement done, explicitly set replacement flag to 0
 complete_replacement: sfz rf
@@ -85,7 +95,8 @@ pushq lceCmd WB tr req tr
 transfer_poph: poph lceResp r0
 beqi r0 COH_ACK transfer_poph
 bf nwbf complete_transfer
-pushq memCmd MEM_CMD_WB req
+# TODO: increment pending bit
+pushq memCmd MEM_CMD_WB req wp
 complete_transfer: popq lceResp r0
 bi ready
 
@@ -108,15 +119,19 @@ bi ready
 set_entry: wde req req lru req nextCohSt
 
 # Read Line from L2 Routine
-read_l2: pushq memCmd
+# TODO: increment pending bit
+read_l2: pushq memCmd wp
 bi ready
 
 # Uncached Request Routine
+# TODO: do not decrement pending bit on this dequeue
 uncached_req: popq lceReq
 bf rqf uncached_store
-pushq memCmd
+# TODO: increment pending bit
+pushq memCmd wp
 bi ready
-uncached_store: pushq memCmd
+# TODO: increment pending bit
+uncached_store: pushq memCmd wp
 bi ready
 
 error: stall

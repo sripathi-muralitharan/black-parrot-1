@@ -5,7 +5,7 @@ import math
 from argparse import ArgumentParser
 # import trace generator for D$
 # TODO: this path is relative to bp_me/syn directory
-# TODO: it would be nice to simply add the directory that TraceGen source lives in to the path
+# it would be nice to simply add the directory that TraceGen source lives in to the path
 # that python will search for files in, then remove the sys.path.append call
 sys.path.append("../software/py/")
 from trace_gen import TraceGen
@@ -28,10 +28,6 @@ parser.add_argument('--sets', dest='sets', type=int, default=64,
                     help='Data cache number of sets')
 parser.add_argument('--mem-size', dest='mem_size', type=int, default=2,
                     help='Size of backing memory, given as integer multiple of D$ size')
-parser.add_argument('-i', dest='lce_id', type=int, default=0,
-                    help='LCE ID')
-parser.add_argument('-l', dest='num_lce', type=int, default=1,
-                    help='Number of LCEs')
 
 args = parser.parse_args()
 
@@ -119,19 +115,19 @@ for i in range(args.num_instr):
   check_valid_addr(addr)
 
   if load:
-    tg.send_load(signed=0, size=size, addr=addr)
+    tg.send_load(signed=0, size=size, addr=addr, uc=1)
     val = read_memory(byte_memory, addr, size)
     #eprint(str(i) + ': mem[{0}:{1}] == {2}'.format(addr, size, val))
-    tg.recv_data(data=val)
+    tg.recv_data(addr=addr, data=val, uc=1)
   else:
     # NOTE: the value being stored will be truncated to size number of bytes
     store_val_trunc = store_val
     if (size < 8):
       store_val_trunc = store_val_trunc & ~(~0 << (size*8))
-    tg.send_store(size=size, addr=addr, data=store_val_trunc)
+    tg.send_store(size=size, addr=addr, data=store_val_trunc, uc=1)
     write_memory(byte_memory, addr, store_val_trunc, size)
     #eprint(str(i) + ': mem[{0}:{1}] := {2}'.format(addr, size, store_val_trunc))
-    tg.recv_data(data=0)
+    tg.recv_data(addr=addr, data=0, uc=1)
     store_val += 1
 
 # test end

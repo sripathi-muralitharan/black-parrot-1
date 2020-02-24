@@ -1,13 +1,13 @@
 /**
  *
  * Name:
- *   bp_cce_nonsynth_tracer.v
+ *   bp_me_nonsynth_cce_tracer.v
  *
  * Description:
  *
  */
 
-module bp_cce_nonsynth_tracer
+module bp_me_nonsynth_cce_tracer
   import bp_common_pkg::*;
   import bp_common_aviary_pkg::*;
   import bp_cce_pkg::*;
@@ -22,12 +22,12 @@ module bp_cce_nonsynth_tracer
     , localparam lg_block_size_in_bytes_lp = `BSG_SAFE_CLOG2(block_size_in_bytes_lp)
 
     // number of way groups managed by this CCE
-    , localparam num_way_groups_lp         = `BSG_CDIV(lce_sets_p, num_cce_p)
+    , localparam num_way_groups_lp         = `BSG_CDIV(cce_way_groups_p, num_cce_p)
     , localparam lg_num_way_groups_lp      = `BSG_SAFE_CLOG2(num_way_groups_lp)
 
-    `declare_bp_lce_cce_if_header_widths(cce_id_width_p, lce_id_width_p, paddr_width_p, lce_assoc_p)
-    `declare_bp_lce_cce_if_widths(cce_id_width_p, lce_id_width_p, paddr_width_p, lce_assoc_p, dword_width_p, cce_block_width_p)
-    `declare_bp_me_if_widths(paddr_width_p, cce_block_width_p, lce_id_width_p, lce_assoc_p)
+    `declare_bp_lce_cce_if_header_widths(cce_id_width_p, lce_id_width_p, lce_max_assoc_p, paddr_width_p)
+    `declare_bp_lce_cce_if_widths(cce_id_width_p, lce_id_width_p, lce_max_assoc_p, paddr_width_p, dword_width_p, cce_block_width_p)
+    `declare_bp_me_if_widths(paddr_width_p, cce_block_width_p, lce_id_width_p, lce_max_assoc_p)
   )
   (input                                        clk_i
    , input                                      reset_i
@@ -69,8 +69,8 @@ module bp_cce_nonsynth_tracer
   );
 
   // LCE-CCE and Mem-CCE Interface
-  `declare_bp_me_if(paddr_width_p, cce_block_width_p, lce_id_width_p, lce_assoc_p);
-  `declare_bp_lce_cce_if(cce_id_width_p, lce_id_width_p, paddr_width_p, lce_assoc_p, dword_width_p, cce_block_width_p);
+  `declare_bp_me_if(paddr_width_p, cce_block_width_p, lce_id_width_p, lce_max_assoc_p);
+  `declare_bp_lce_cce_if(cce_id_width_p, lce_id_width_p, paddr_width_p, lce_max_assoc_p, dword_width_p, cce_block_width_p);
 
   bp_lce_cce_req_s           lce_req;
   bp_lce_cce_resp_s          lce_resp;

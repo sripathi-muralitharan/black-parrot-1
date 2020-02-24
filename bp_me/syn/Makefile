@@ -20,23 +20,28 @@ PADDR_WIDTH ?= 40
 
 NUM_INSTR_P ?= 16
 SEED_P ?= 1
+# uncached / normal mode testing
+SKIP_INIT_P ?= 1
 
 # Select CCE ROM based on CFG and Coherence Protocol
 ifeq ($(CFG), e_bp_half_core_cfg)
   NUM_LCE_P=1
-  N_WG=64
 else ifeq ($(CFG), e_bp_single_core_cfg)
   NUM_LCE_P=2
-  N_WG=64
 else ifeq ($(CFG), e_bp_dual_core_cfg)
   NUM_LCE_P=4
-  N_WG=32
+else ifeq ($(CFG), e_bp_tri_core_cfg)
+  NUM_LCE_P=6
 else ifeq ($(CFG), e_bp_quad_core_cfg)
   NUM_LCE_P=8
-  N_WG=16
+else ifeq ($(CFG), e_bp_hexa_core_cfg)
+  NUM_LCE_P=12
 else ifeq ($(CFG), e_bp_oct_core_cfg)
   NUM_LCE_P=16
-  N_WG=8
+else ifeq ($(CFG), e_bp_twelve_core_cfg)
+  NUM_LCE_P=24
+else ifeq ($(CFG), e_bp_sexta_core_cfg)
+  NUM_LCE_P=32
 endif
 
 COH_PROTO   ?= mesi
@@ -65,7 +70,7 @@ axe:
 	axe check TSO trace.axe
 
 bsg_trace_rom_%.tr:
-	-python $(TB_PATH)/$(TB)/bsg_trace_rom.py -m $(PADDR_WIDTH) -n $(NUM_INSTR_P) -s $(SEED_P) -i $* -l $(NUM_LCE_P) > $(TB_PATH)/$(TB)/$@
+	-python $(TB_PATH)/$(TB)/bsg_trace_rom.py -m $(PADDR_WIDTH) -n $(NUM_INSTR_P) -s $(SEED_P) > $(TB_PATH)/$(TB)/$@
 
 bsg_trace_rom_%.v: bsg_trace_rom_%.tr
 	-python $(BASEJUMP_STL_DIR)/bsg_mem/bsg_ascii_to_rom.py $(TB_PATH)/$(TB)/$< bsg_trace_rom_$* > $(TB_PATH)/$(TB)/$@

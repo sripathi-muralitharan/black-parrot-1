@@ -349,7 +349,9 @@ Assembler::parseOpd(string &s) {
 
   // Default
   } else {
-    return 0;
+    printf("Bad Opd: %s\n", s.c_str());
+    exit(-1);
+    //return (bp_cce_inst_opd_e)0;
   }
 }
 
@@ -399,34 +401,38 @@ Assembler::parseCohStImm(string &s) {
 
 void
 Assembler::parseALU(vector<string> *tokens, int n, bp_cce_inst_s *inst) {
+  // ALU is I-type or R-type
   if (tokens->size() == 1) { // nop - translates to addi r0 = r0 + 0
+    inst->type_u.itype.dst = e_opd_r0;
     inst->type_u.itype.src_a = e_opd_r0;
     inst->type_u.itype.imm = 0;
-    inst->type_u.itype.dst = e_opd_r0;
   } else if (tokens->size() == 2) { // inc, dec, neg, not - same dst as src
-    inst->type_u.alu_op_s.src_a = parseOpd(tokens->at(1));
-    inst->type_u.alu_op_s.dst = parseOpd(tokens->at(1));
-    if (inst->minor_op == e_inc || inst->minor_op == e_dec) {
+    inst->type_u.itype.dst = parseOpd(tokens->at(1));
+    inst->type_u.itype.src_a = inst->type_u.itype.dst;
+    if (inst->minor_op == e_inc_op || inst->minor_op == e_dec_op) {
       inst->type_u.alu_op_s.src_b = e_src_imm;
       inst->type_u.alu_op_s.imm = 1;
-    } else if (inst->minor_op == e_neg) {
-      inst->type_u.alu_op_s.src_b = e_src_imm;
-      inst->type_u.alu_op_s.imm = 0;
-    } else {
-      printf("Unknown ALU instruction: %s\n", tokens->at(0).c_str());
-      exit(-1);
     }
-  } else if (tokens->size() == 3) { // lsh, rsh
-    inst->type_u.alu_op_s.src_a = parseSrcOpd(tokens->at(1));
-    inst->type_u.alu_op_s.dst = parseDstOpd(tokens->at(1));
-    inst->type_u.alu_op_s.src_b = e_src_imm;
-  } else if (tokens->size() == 4) { // add, sub, and, or, xor, addi, subi
-    inst->type_u.alu_op_s.src_a = parseSrcOpd(tokens->at(1));
-    inst->type_u.alu_op_s.src_b = parseSrcOpd(tokens->at(2));
-    if (inst->type_u.alu_op_s.src_b == e_src_imm) {
+  } else if (tokens->size() == 4) { // all others
+    // dst is always last opd
+    inst->type_u.rtype.dst = parseDstOpd(tokens->at(3));
+    // src_a is always first and non-immediate
+    inst->type_u.rtype.src_a = parseSrcOpd(tokens->at(1));
+    // rtype
+    if (inst->minor_op == e_add_op
+        || inst->minor_op == e_sub_op
+        || inst->minor_op == e_lsh_op
+        || inst->minor_op == e_rsh_op
+        || inst->minor_op == e_and_op
+        || inst->minor_op == e_or_op
+        || inst->minor_op == e_xor_op
+        ) {
+      inst->type_u.rtype.src_b = parseSrcOpd(tokens->at(2));
+    }
+    // itype
+    else {
       inst->type_u.alu_op_s.imm = parseImm(tokens->at(2), 16);
     }
-    inst->type_u.alu_op_s.dst = parseDstOpd(tokens->at(3));
   } else {
     printf("Unknown ALU instruction: %s\n", tokens->at(0).c_str());
     exit(-1);
@@ -529,53 +535,53 @@ Assembler::parseBranch(vector<string> *tokens, int n, bp_cce_inst_s *inst) {
 
 bp_cce_inst_flag_e
 Assembler::parseFlagOneHot(string &s) {
-  switch (parseDstOpd(s)) {
-    case e_dst_rqf:
+  switch (parseOpd(s)) {
+    case e_opd_rqf:
       return e_flag_rqf;
       break;
-    case e_dst_ucf:
+    case e_opd_ucf:
       return e_flag_ucf;
       break;
-    case e_dst_nerf:
+    case e_opd_nerf:
       return e_flag_nerf;
       break;
-    case e_dst_ldf:
+    case e_opd_ldf:
       return e_flag_ldf;
       break;
-    case e_dst_pf:
+    case e_opd_pf:
       return e_flag_pf;
       break;
-    case e_dst_lef:
+    case e_opd_lef:
       return e_flag_lef;
       break;
-    case e_dst_cf:
+    case e_opd_cf:
       return e_flag_cf;
       break;
-    case e_dst_cef:
+    case e_opd_cef:
       return e_flag_cef;
       break;
-    case e_dst_cof:
+    case e_opd_cof:
       return e_flag_cof;
       break;
-    case e_dst_cdf:
+    case e_opd_cdf:
       return e_flag_cdf;
       break;
-    case e_dst_tf:
+    case e_opd_tf:
       return e_flag_tf;
       break;
-    case e_dst_rf:
+    case e_opd_rf:
       return e_flag_rf;
       break;
-    case e_dst_uf:
+    case e_opd_uf:
       return e_flag_uf;
       break;
-    case e_dst_if:
+    case e_opd_if:
       return e_flag_if;
       break;
-    case e_dst_nwbf:
+    case e_opd_nwbf:
       return e_flag_nwbf;
       break;
-    case e_dst_sf:
+    case e_opd_sf:
       return e_flag_sf;
       break;
     default:

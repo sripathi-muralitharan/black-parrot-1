@@ -210,6 +210,7 @@ typedef union {
 /*
  * ALU Unit Operation
  */
+/*
 typedef enum {
   e_alu_add                              = 0x0   // Add
   ,e_alu_sub                             = 0x1   // Subtract
@@ -225,10 +226,12 @@ typedef enum {
 } bp_cce_inst_alu_op_e;
 
 #define bp_cce_inst_alu_op_width 4
+*/
 
 /*
  * Branch Unit Operation
  */
+/*
 typedef enum {
   e_branch_eq                            = 0x0   // Branch if A == B
   ,e_branch_neq                          = 0x1   // Branch if A != B
@@ -237,7 +240,7 @@ typedef enum {
 } bp_cce_inst_branch_op_e;
 
 #define bp_cce_inst_branch_op_width 2
-
+*/
 /*
  * Speculative Bits Unit Operation
  */
@@ -353,6 +356,7 @@ typedef enum {
  * Source Operands
  */
 
+/*
 // Source Union
 typedef union {
   bp_cce_inst_opd_gpr_e        gpr;
@@ -361,11 +365,12 @@ typedef union {
   bp_cce_inst_opd_params_e     param;
   bp_cce_inst_opd_queue_e      q;
 } bp_cce_inst_src_u;
+*/
 
 /*
  * Destination Operands
  */
-
+/*
 // Destination Union
 typedef union {
   bp_cce_inst_opd_gpr_e        gpr;
@@ -373,6 +378,7 @@ typedef union {
   bp_cce_inst_opd_special_e    special;
   bp_cce_inst_opd_params_e     param;
 } bp_cce_inst_dst_u;
+*/
 
 /*
  * MUX Controls
@@ -532,9 +538,9 @@ typedef enum {
 
 typedef struct {
   uint32_t                               pad : bp_cce_inst_rtype_pad;
-  bp_cce_inst_src_u                      src_b;
-  bp_cce_inst_dst_u                      dst;
-  bp_cce_inst_src_u                      src_a;
+  bp_cce_inst_opd_e                      src_b;
+  bp_cce_inst_opd_e                      dst;
+  bp_cce_inst_opd_e                      src_a;
 } bp_cce_inst_rtype_s;
 
 /*
@@ -548,8 +554,8 @@ typedef struct {
 typedef struct {
   uint16_t                               imm : bp_cce_inst_imm16_width;
   uint32_t                               pad : bp_cce_inst_itype_pad;
-  bp_cce_inst_dst_u                      dst;
-  bp_cce_inst_src_u                      src_a;
+  bp_cce_inst_opd_e                      dst;
+  bp_cce_inst_opd_e                      src_a;
 } bp_cce_inst_itype_s;
 
 /*
@@ -564,8 +570,8 @@ typedef struct {
 typedef struct {
   uint16_t                               imm : bp_cce_inst_imm16_width;
   uint8_t                                global_mem : 1;
-  bp_cce_inst_opd_gpr_e                  dst : bp_cce_inst_opd_width;
-  bp_cce_inst_opd_gpr_e                  src_a : bp_cce_inst_opd_width;
+  bp_cce_inst_opd_e                      dst : bp_cce_inst_opd_width;
+  bp_cce_inst_opd_e                      src_a : bp_cce_inst_opd_width;
 } bp_cce_inst_mltype_s;
 
 /*
@@ -580,8 +586,8 @@ typedef struct {
 typedef struct {
   uint16_t                               imm : bp_cce_inst_imm16_width;
   uint8_t                                global_mem : 1;
-  bp_cce_inst_opd_gpr_e                  src_b : bp_cce_inst_opd_width;
-  bp_cce_inst_opd_gpr_e                  src_a : bp_cce_inst_opd_width;
+  bp_cce_inst_opd_e                      src_b : bp_cce_inst_opd_width;
+  bp_cce_inst_opd_e                      src_a : bp_cce_inst_opd_width;
 } bp_cce_inst_mstype_s;
 
 /*
@@ -595,9 +601,9 @@ typedef struct {
 typedef struct {
   uint16_t                               target : bp_cce_inst_addr_width;
   uint32_t                               pad : bp_cce_inst_btype_pad;
-  bp_cce_inst_src_u                      src_b;
+  bp_cce_inst_opd_e                      src_b;
   uint8_t                                pad4 : bp_cce_inst_imm4_width;
-  bp_cce_inst_src_u                      src_a;
+  bp_cce_inst_opd_e                      src_a;
 } bp_cce_inst_btype_s;
 
 /*
@@ -612,7 +618,7 @@ typedef struct {
   uint16_t                               target : bp_cce_inst_addr_width;
   uint32_t                               pad : bp_cce_inst_bitype_pad;
   uint8_t                                imm : bp_cce_inst_imm8_width;
-  bp_cce_inst_src_u                      src_a;
+  bp_cce_inst_opd_e                      src_a;
 } bp_cce_inst_bitype_s;
 
 /*
@@ -639,7 +645,7 @@ typedef struct {
   uint32_t                               pad : bp_cce_inst_stype_pad;
   bp_coh_states_e                        state : bp_coh_bits;
   bp_cce_inst_mux_sel_addr_e             addr_sel : bp_cce_inst_mux_sel_addr_width;
-  bp_cce_inst_opd_gpr_e                  dst : bp_cce_inst_opd_width;
+  bp_cce_inst_opd_e                      dst : bp_cce_inst_opd_width;
   bp_cce_inst_spec_op_e                  cmd : bp_cce_inst_spec_op_width;
 } bp_cce_inst_stype_s;
 
@@ -654,7 +660,7 @@ typedef struct {
 typedef struct {
   uint32_t                               pad : bp_cce_inst_dptype_pad;
   uint8_t                                pending : 1;
-  bp_cce_inst_opd_gpr_e                  dst : bp_cce_inst_opd_width;
+  bp_cce_inst_opd_e                      dst : bp_cce_inst_opd_width;
   bp_cce_inst_mux_sel_addr_e             addr_sel : bp_cce_inst_mux_sel_addr_width;
 } bp_cce_inst_dptype_s;
 
@@ -672,7 +678,7 @@ typedef struct {
   bp_cce_inst_mux_sel_way_e              lru_way_sel : bp_cce_inst_mux_sel_way_width;
   bp_cce_inst_mux_sel_way_e              way_sel : bp_cce_inst_mux_sel_way_width;
   bp_cce_inst_mux_sel_lce_e              lce_sel : bp_cce_inst_mux_sel_lce_width;
-  bp_cce_inst_opd_gpr_e                  dst : bp_cce_inst_opd_width;
+  bp_cce_inst_opd_e                      dst : bp_cce_inst_opd_width;
   bp_cce_inst_mux_sel_addr_e             addr_sel : bp_cce_inst_mux_sel_addr_width;
 } bp_cce_inst_drtype_s;
 
@@ -705,7 +711,7 @@ typedef struct {
 typedef struct {
   uint8_t                                write_pending : 1;
   uint32_t                               pad : bp_cce_inst_popq_pad;
-  bp_cce_inst_opd_gpr_e                  dst : bp_cce_inst_opd_width;
+  bp_cce_inst_opd_e                      dst : bp_cce_inst_opd_width;
   uint8_t                                pad2 : bp_cce_inst_imm2_width;
   bp_cce_inst_src_q_sel_e                src_q : bp_cce_inst_src_q_sel_width;
 } bp_cce_inst_popq_s;
@@ -730,7 +736,7 @@ typedef union {
 typedef struct {
   uint8_t                                write_pending : 1;
   pushq_way_or_length_u                  way_or_length;
-  bp_cce_inst_opd_gpr_e                  src_a : bp_cce_inst_opd_width;
+  bp_cce_inst_opd_e                      src_a : bp_cce_inst_opd_width;
   bp_cce_inst_mux_sel_lce_e              lce_sel : bp_cce_inst_mux_sel_lce_width;
   bp_cce_inst_mux_sel_addr_e             addr_sel : bp_cce_inst_mux_sel_addr_width;
   pushq_cmd_u                            cmd;
@@ -760,19 +766,19 @@ typedef union {
 } bp_cce_inst_type_u;
 
 typedef enum {
-  e_rtype;
-  e_itype;
-  e_mltype;
-  e_mstype;
-  e_btype;
-  e_bitype;
-  e_bftype;
-  e_stype;
-  e_dptype;
-  e_dwtype;
-  e_drtype;
-  e_popq;
-  e_pushq;
+  e_rtype
+  ,e_itype
+  ,e_mltype
+  ,e_mstype
+  ,e_btype
+  ,e_bitype
+  ,e_bftype
+  ,e_stype
+  ,e_dptype
+  ,e_dwtype
+  ,e_drtype
+  ,e_popq
+  ,e_pushq
 } bp_cce_inst_type_e;
 
 typedef struct {

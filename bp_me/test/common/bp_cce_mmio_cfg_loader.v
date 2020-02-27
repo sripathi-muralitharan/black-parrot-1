@@ -17,7 +17,7 @@ module bp_cce_mmio_cfg_loader
   import bp_me_pkg::*;
   #(parameter bp_params_e bp_params_p = e_bp_inv_cfg
     `declare_bp_proc_params(bp_params_p)
-    `declare_bp_me_if_widths(paddr_width_p, cce_block_width_p, lce_id_width_p, lce_assoc_p)
+    `declare_bp_me_if_widths(paddr_width_p, cce_block_width_p, lce_id_width_p, lce_max_assoc_p)
 
     , parameter inst_width_p          = "inv"
     , parameter inst_ram_addr_width_p = "inv"
@@ -47,7 +47,7 @@ module bp_cce_mmio_cfg_loader
   wire unused0 = &{io_resp_i, io_resp_v_i};
   assign io_resp_ready_o = 1'b1;
    
- `declare_bp_me_if(paddr_width_p, cce_block_width_p, lce_id_width_p, lce_assoc_p);
+ `declare_bp_me_if(paddr_width_p, cce_block_width_p, lce_id_width_p, lce_max_assoc_p);
 
   bp_cce_mem_msg_s io_cmd_cast_o;
   bp_cce_mem_msg_s io_resp_cast_i;

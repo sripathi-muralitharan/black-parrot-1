@@ -32,8 +32,8 @@ module bp_tile_node
    , input                                       mem_reset_i
 
    // Memory side connection
-   , input [io_noc_did_width_p-1:0]              host_did_i
    , input [io_noc_did_width_p-1:0]              my_did_i
+   , input [io_noc_did_width_p-1:0]              host_did_i
    , input [coh_noc_cord_width_p-1:0]            my_cord_i
 
    // Connected to other tiles on east and west
@@ -75,8 +75,8 @@ module bp_tile_node
      ,.reset_i(core_reset_i)
 
      // Memory side connection
-     ,.host_did_i(host_did_i)
      ,.my_did_i(my_did_i)
+     ,.host_did_i(host_did_i)
      ,.my_cord_i(my_cord_i)
 
      ,.lce_req_link_i(core_lce_req_link_li)

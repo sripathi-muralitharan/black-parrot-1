@@ -29,7 +29,7 @@ export DC_SHELL  ?= dc_shell
 # Some environments have issues with setting DVE as an environment variable
 export _DVE      ?= dve
 export GTKWAVE   ?= gtkwave
-export PYTHON    ?= python3
+export PYTHON    ?= python
 
 ## Needed for verilator g++ compilations
 export SYSTEMC_INCLUDE ?= $(BP_EXTERNAL_DIR)/include

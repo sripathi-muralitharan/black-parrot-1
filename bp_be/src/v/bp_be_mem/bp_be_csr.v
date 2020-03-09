@@ -34,6 +34,7 @@ module bp_be_csr
     , input                             instret_i
 
     , input                             exception_v_i
+    , input                             fencei_v_i
     , input [vaddr_width_p-1:0]         exception_pc_i
     , input [vaddr_width_p-1:0]         exception_npc_i
     , input [vaddr_width_p-1:0]         exception_vaddr_i
@@ -54,8 +55,6 @@ module bp_be_csr
     , output                            translation_en_o
     , output                            mstatus_sum_o
     , output                            mstatus_mxr_o
-    , output logic                      tlb_fence_o
-    , output logic                      fencei_o
     
     // FE Exceptions
     , output logic                      itlb_fill_o
@@ -304,7 +303,7 @@ assign sip_wmask_li    = '{meip: 1'b0, seip: 1'b0
                             ,default: '0
                            };
 
-logic exception_v_o, interrupt_v_o, ret_v_o;
+logic exception_v_o, interrupt_v_o, ret_v_o, sfence_v_o;
 // CSR data
 always_comb
   begin
@@ -352,8 +351,7 @@ always_comb
     ret_v_o          = '0;
     illegal_instr_o  = '0;
     csr_data_lo      = '0;
-    tlb_fence_o      = '0;
-    fencei_o         = '0;
+    sfence_v_o       = '0;
     
     itlb_fill_o           = '0;
     instr_page_fault_o    = '0;
@@ -376,31 +374,14 @@ always_comb
               dcsr_li.prv    = priv_mode_r;
             end
         end
-      else if (~is_debug_mode & (csr_cmd.csr_op == e_op_enter_debug))
-        begin
-          debug_mode_n  = 1'b1;
-          dpc_li        = paddr_width_p'($signed(exception_pc_i));
-          dcsr_li.cause = 3; // Requested halt
-          dcsr_li.prv   = priv_mode_r;
-        end
-      else if (is_debug_mode & (csr_cmd.csr_op == e_op_exit_debug))
-        begin
-          debug_mode_n  = 1'b0;
-          priv_mode_n   = dcsr_lo.prv;
-          ret_v_o       = 1'b1;
-        end
       else if (csr_cmd.csr_op == e_sfence_vma)
         begin
           if (is_s_mode & mstatus_lo.tvm)
               illegal_instr_o = 1'b1;
           else
             begin
-              tlb_fence_o     = 1'b1;
+              sfence_v_o = 1'b1;
             end
-        end
-      else if (csr_cmd.csr_op == e_fencei)
-        begin
-          fencei_o = 1'b1;
         end
       else if (csr_cmd.csr_op == e_dret)
         begin
@@ -704,9 +685,12 @@ assign trap_pkt_cast_o.epc              = (csr_cmd.csr_op == e_sret)
                                             ? mepc_r
                                             : dpc_r;
 assign trap_pkt_cast_o.tvec             = (priv_mode_n == `PRIV_MODE_S) ? stvec_r : mtvec_r;
+assign trap_pkt_cast_o.cause            = (priv_mode_n == `PRIV_MODE_S) ? scause_li : mcause_li;
 assign trap_pkt_cast_o.priv_n           = priv_mode_n;
 assign trap_pkt_cast_o.translation_en_n = translation_en_n;
 // TODO: Find more solid invariant
+assign trap_pkt_cast_o.fencei           = fencei_v_i;
+assign trap_pkt_cast_o.sfence           = sfence_v_o;
 assign trap_pkt_cast_o.exception        = exception_v_o;
 assign trap_pkt_cast_o._interrupt       = interrupt_v_o;
 assign trap_pkt_cast_o.eret             = ret_v_o;

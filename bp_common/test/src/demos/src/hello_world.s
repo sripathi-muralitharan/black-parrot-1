@@ -8,7 +8,6 @@ main:
     csrr x4, mhartid
     slli x4, x4, 3
     li x3, 0x00101000
-    add x3, x3, x4
 
     /* H */
     li x2, 0x48
@@ -45,6 +44,12 @@ main:
     sb x2, 0(x3)
     /* ! */
     li x2, 0x21
+    sb x2, 0(x3)
+    /* \r */
+    li x2, 0x0D
+    sb x2, 0(x3)
+    /* \n */
+    li x2, 0x0A
     sb x2, 0(x3)
     /* \0 */
     sb x0, 0(x3)

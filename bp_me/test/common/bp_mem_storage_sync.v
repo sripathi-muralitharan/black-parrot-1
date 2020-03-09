@@ -40,8 +40,8 @@ assign data_li = data_i;
 
 import "DPI-C" context function string rebase_hexfile(input string memfile_name
                                                       , input longint dram_base);
-string hex_file;
 
+string hex_file;
 initial
   begin
     if (mem_load_p)

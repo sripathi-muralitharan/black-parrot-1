@@ -28,9 +28,13 @@ module testbench
    , parameter dcache_trace_p              = 0
    , parameter vm_trace_p                  = 0
    , parameter preload_mem_p               = 0
+   , parameter load_nbf_p                  = 0
    , parameter skip_init_p                 = 0
+   , parameter cosim_p                     = 0
+   , parameter cosim_cfg_file_p            = load_nbf_p ? "prog.cfg" : "prog.elf"
 
    , parameter mem_zero_p         = 1
+   , parameter mem_load_p         = preload_mem_p
    , parameter mem_file_p         = "prog.mem"
    , parameter mem_cap_in_bytes_p = 2**25
    , parameter [paddr_width_p-1:0] mem_offset_p = paddr_width_p'(32'h8000_0000)
@@ -59,7 +63,7 @@ bp_io_noc_ral_link_s [E:P] cmd_link_li, cmd_link_lo;
 bp_io_noc_ral_link_s [E:P] resp_link_li, resp_link_lo;
 
 bp_cce_mem_msg_s dram_cmd_li;
-logic            dram_cmd_v_li, dram_cmd_ready_lo;
+logic            dram_cmd_v_li, dram_cmd_yumi_lo;
 bp_cce_mem_msg_s dram_resp_lo;
 logic            dram_resp_v_lo, dram_resp_ready_li;
 
@@ -88,7 +92,7 @@ logic                  nbf_cmd_v_lo, nbf_cmd_ready_li;
 bp_cce_mem_msg_s       nbf_resp_li;
 logic                  nbf_resp_v_li, nbf_resp_ready_lo;
 
-wire [io_noc_did_width_p-1:0] host_did_li = '1;
+wire [io_noc_did_width_p-1:0] dram_did_li = '1;
 wire [io_noc_did_width_p-1:0] proc_did_li = 1;
 
 bp_io_noc_ral_link_s stub_cmd_link_li, stub_resp_link_li;
@@ -112,8 +116,8 @@ wrapper
    ,.mem_clk_i(clk_i)
    ,.mem_reset_i(reset_i)
 
-   ,.host_did_i(host_did_li)
    ,.my_did_i(proc_did_li)
+   ,.host_did_i(dram_did_li)
 
    ,.io_cmd_link_i({proc_cmd_link_li, stub_cmd_link_li})
    ,.io_cmd_link_o({proc_cmd_link_lo, stub_cmd_link_lo})
@@ -144,6 +148,31 @@ wrapper
        ,.rd_data_i(be_calculator.wb_pkt.rd_data)
        );
 
+  bind bp_be_top
+    bp_nonsynth_cosim
+     #(.bp_params_p(bp_params_p))
+      cosim
+      (.clk_i(clk_i)
+       ,.reset_i(reset_i)
+       ,.en_i(testbench.cosim_p == 1)
+
+       ,.mhartid_i(be_checker.scheduler.int_regfile.cfg_bus.core_id)
+       // Want to pass config file as a parameter, but cannot in Verilator 4.025
+       // Parameter-resolved constants must not use dotted references
+       ,.config_file_i(testbench.cosim_cfg_file_p)
+
+       ,.commit_v_i(be_calculator.commit_pkt.instret)
+       ,.commit_pc_i(be_calculator.commit_pkt.pc)
+       ,.commit_instr_i(be_calculator.commit_pkt.instr)
+
+       ,.rd_w_v_i(be_calculator.wb_pkt.rd_w_v)
+       ,.rd_addr_i(be_calculator.wb_pkt.rd_addr)
+       ,.rd_data_i(be_calculator.wb_pkt.rd_data)
+
+       ,.interrupt_v_i(be_mem.csr.trap_pkt_cast_o._interrupt)
+       ,.cause_i(be_mem.csr.trap_pkt_cast_o.cause)
+       );
+
   bind bp_be_director
     bp_be_nonsynth_npc_tracer
      #(.bp_params_p(bp_params_p))
@@ -165,7 +194,7 @@ wrapper
        ,.commit_pkt_i(commit_pkt)
        );
 
-  bind bp_be_dcache
+  /*bind bp_be_dcache
     bp_be_nonsynth_dcache_tracer
      #(.bp_params_p(bp_params_p))
      dcache_tracer
@@ -176,7 +205,7 @@ wrapper
        ,.mhartid_i(cfg_bus_cast_i.core_id)
 
        ,.v_tv_r(v_tv_r)
-       ,.cache_miss_o(cache_miss_o)
+       //,.cache_miss_i(cache_miss_i)
 
        ,.paddr_tv_r(paddr_tv_r)
        ,.uncached_tv_r(uncached_tv_r)
@@ -186,7 +215,7 @@ wrapper
        ,.sc_op_tv_r(sc_op_tv_r)
        ,.store_data(data_tv_r)
        ,.load_data(data_o)
-       );
+       );*/
 
   bind bp_be_top
     bp_be_nonsynth_calc_tracer
@@ -226,7 +255,7 @@ wrapper
        ,.mpp_i(be_mem.csr.mstatus_n.mpp)
        );
 
-  bind bp_core
+  bind bp_core_minimal
     bp_be_nonsynth_vm_tracer
     #(.bp_params_p(bp_params_p))
     vm_tracer
@@ -275,11 +304,11 @@ bind bp_be_top
 
      ,.mem_cmd_i(dram_cmd_li)
      ,.mem_cmd_v_i(dram_cmd_v_li)
-     ,.mem_cmd_ready_i(dram_cmd_ready_lo)
+     ,.mem_cmd_yumi_i(dram_cmd_yumi_lo)
 
      ,.mem_resp_i(dram_resp_lo)
      ,.mem_resp_v_i(dram_resp_v_lo)
-     ,.mem_resp_yumi_i(dram_resp_ready_li & dram_resp_v_lo)
+     ,.mem_resp_ready_i(dram_resp_ready_li)
      );
 
   bind bp_cce
@@ -339,7 +368,7 @@ bp_me_cce_to_mem_link_bidir
    ,.mem_resp_v_o(load_resp_v_li)
    ,.mem_resp_yumi_i(load_resp_yumi_lo)
 
-   ,.my_cord_i(io_noc_cord_width_p'(host_did_li))
+   ,.my_cord_i(io_noc_cord_width_p'(dram_did_li))
    ,.my_cid_i('0)
    ,.dst_cord_i(dst_cord_lo)
    ,.dst_cid_i('0)
@@ -372,7 +401,7 @@ bp_me_cce_to_mem_link_client
 
    ,.mem_cmd_o(dram_cmd_li)
    ,.mem_cmd_v_o(dram_cmd_v_li)
-   ,.mem_cmd_yumi_i(dram_cmd_ready_lo & dram_cmd_v_li)
+   ,.mem_cmd_yumi_i(dram_cmd_yumi_lo)
 
    ,.mem_resp_i(dram_resp_lo)
    ,.mem_resp_v_i(dram_resp_v_lo)
@@ -406,11 +435,11 @@ bp_mem
  
    ,.mem_cmd_i(dram_cmd_li)
    ,.mem_cmd_v_i(dram_cmd_v_li)
-   ,.mem_cmd_ready_o(dram_cmd_ready_lo)
+   ,.mem_cmd_yumi_o(dram_cmd_yumi_lo)
  
    ,.mem_resp_o(dram_resp_lo)
    ,.mem_resp_v_o(dram_resp_v_lo)
-   ,.mem_resp_yumi_i(dram_resp_ready_li & dram_resp_v_lo)
+   ,.mem_resp_ready_i(dram_resp_ready_li)
    );
 
 logic [num_core_p-1:0] program_finish;
@@ -431,14 +460,14 @@ bp_nonsynth_host
    ,.program_finish_o(program_finish)
    );
 
-logic nbf_done_lo;
-if (preload_mem_p == 0)
-  begin : preload
+logic nbf_done_lo, cfg_done_lo;
+if (load_nbf_p)
+  begin : nbf
     bp_nonsynth_nbf_loader
      #(.bp_params_p(bp_params_p))
      nbf_loader
       (.clk_i(clk_i)
-       ,.reset_i(reset_i)
+       ,.reset_i(reset_i | ~cfg_done_lo)
 
        ,.io_cmd_o(nbf_cmd_lo)
        ,.io_cmd_v_o(nbf_cmd_v_lo)
@@ -454,6 +483,10 @@ if (preload_mem_p == 0)
 else
   begin : no_preload
     assign nbf_done_lo = 1'b1;
+    
+    assign nbf_cmd_lo = '0;
+    assign nbf_cmd_v_lo = '0;
+    assign nbf_resp_ready_lo = '0;
   end
 
 localparam cce_instr_ram_addr_width_lp = `BSG_SAFE_CLOG2(num_cce_instr_ram_els_p);
@@ -463,10 +496,11 @@ bp_cce_mmio_cfg_loader
     ,.inst_ram_addr_width_p(cce_instr_ram_addr_width_lp)
     ,.inst_ram_els_p(num_cce_instr_ram_els_p)
     ,.skip_ram_init_p(skip_init_p)
+    ,.clear_freeze_p(!load_nbf_p)
     )
   cfg_loader
   (.clk_i(clk_i)
-   ,.reset_i(reset_i | ~nbf_done_lo)
+   ,.reset_i(reset_i)
    
    ,.io_cmd_o(cfg_cmd_lo)
    ,.io_cmd_v_o(cfg_cmd_v_lo)
@@ -475,11 +509,13 @@ bp_cce_mmio_cfg_loader
    ,.io_resp_i(cfg_resp_li)
    ,.io_resp_v_i(cfg_resp_v_li)
    ,.io_resp_ready_o(cfg_resp_ready_lo)
+   
+   ,.done_o(cfg_done_lo)
   );
 
 // CFG and NBF are mutex, so we can just use fixed arbitration here
 always_comb
-  if (nbf_done_lo)
+  if (~cfg_done_lo)
     begin
       load_cmd_lo = cfg_cmd_lo;
       load_cmd_v_lo = load_cmd_ready_li & cfg_cmd_v_lo;

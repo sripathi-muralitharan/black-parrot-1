@@ -42,11 +42,52 @@ bf nerf next_coh_set_s
 bf cf next_coh_set_s
 # invalidations not required, thus block not cache, set to E
 next_coh_set_e: movis E nextCohSt
-bi inv_check
+bi replace_check
 next_coh_set_s: movis S nextCohSt
-bi inv_check
+bi replace_check
 next_coh_set_m: movis M nextCohSt
-# fall through to inv_check
+# fall through to replace_check
+
+# Replacement Check Routine
+replace_check: bfz rf transfer_check
+
+# Replacement Routine
+replace: pushq lceCmd WB req lru lru
+# wait for writeback response
+replacement_poph: poph lceResp r0
+beqi r0 COH_ACK replacement_poph
+bf nwbf complete_replacement
+pushq memCmd MEM_CMD_WB lru
+popq lceResp r0
+# replacement done, explicitly set replacement flag to 0
+complete_replacement: sfz rf
+
+# Transfer Check
+transfer_check: bfz tf inv_check
+
+# Transfer routine - other cache has block in E/M
+transfer: bfz rqf transfer_downgrade
+# write request invalidates current owner then does transfer
+inv
+bi transfer_send
+# read request downgrades owner to S then does transfer
+# nextCohState will already be set to S, because this is a read and block was cached
+transfer_downgrade: pushq lceCmd ST tr req tr
+# update directory state for prior owner
+wds req tr tr nextCohSt
+
+transfer_send: pushq lceCmd TR tr req tr
+# be conservative and always do writeback now, even though it would not be strictly required.
+# however, the LCEs probably don't handle this properly (unsetting dirty bit) if writeback
+# only occurs on M->S transfer
+pushq lceCmd WB tr req tr
+# wait for transfer WB response
+transfer_poph: poph lceResp r0
+beqi r0 COH_ACK transfer_poph
+bf nwbf complete_transfer
+pushq memCmd MEM_CMD_WB req
+complete_transfer: popq lceResp r0
+bi ready
 
 # Invalidation Check
 inv_check: bfz if upgrade_check
@@ -65,34 +106,6 @@ bi ready
 # write directory entry before memory messages may occur
 # next_coh_state is not saved/restored across memory access
 set_entry: wde req req lru req nextCohSt
-
-# Replacement Check Routine
-replace_check: bfz rf transfer_check
-
-# Replacement Routine
-replace: pushq lceCmd WB req lru lru
-# wait for writeback response
-replacement_poph: poph lceResp r0
-beqi r0 COH_ACK replacement_poph
-bf nwbf complete_replacement
-pushq memCmd MEM_CMD_WB lru
-popq lceResp r0
-# replacement done, explicitly set replacement flag to 0
-complete_replacement: sfz rf
-
-# Transfer Check
-transfer_check: bfz tf read_l2
-
-# Transfer routine - other cache has block in E/M
-transfer: pushq lceCmd TR tr req tr
-pushq lceCmd WB tr req tr
-# wait for transfer WB response
-transfer_poph: poph lceResp r0
-beqi r0 COH_ACK transfer_poph
-bf nwbf complete_transfer
-pushq memCmd MEM_CMD_WB req
-complete_transfer: popq lceResp r0
-bi ready
 
 # Read Line from L2 Routine
 read_l2: pushq memCmd

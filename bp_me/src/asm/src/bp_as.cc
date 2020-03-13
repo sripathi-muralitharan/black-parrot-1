@@ -701,6 +701,8 @@ Assembler::parseDirWaySel(string &s) {
     return e_dir_way_sel_lru_way_addr_way;
   } else if (!s.compare("shwayr0")) {
     return e_dir_way_sel_sh_way_r0;
+  } else if (!s.compare("tr")) {
+    return e_dir_way_sel_tr_lce_way;
   } else {
     printf("Unknown directory way select operand: %s\n", s.c_str());
     exit(-1);

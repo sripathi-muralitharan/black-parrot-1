@@ -527,6 +527,7 @@ module bp_cce
       e_dir_way_sel_lru_way_addr_way: dir_way_li = mshr.lru_way_id;
       e_dir_way_sel_sh_way_r0: dir_way_li = sharers_ways_lo[gpr_r_lo[e_gpr_r0][lg_num_lce_lp-1:0]];
       e_dir_way_sel_inv: dir_way_li = inv_dir_way_lo;
+      e_dir_way_sel_tr_lce_way: dir_way_li = mshr.tr_way_id;
       default: dir_way_li = '0;
     endcase
     case (decoded_inst_lo.dir_coh_state_sel)

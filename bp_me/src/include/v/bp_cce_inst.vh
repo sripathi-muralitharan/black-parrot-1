@@ -393,6 +393,7 @@ typedef enum logic [3:0] {
   ,e_dir_way_sel_lru_way_addr_way        = 4'b1001
   ,e_dir_way_sel_sh_way_r0               = 4'b1010
   ,e_dir_way_sel_inv                     = 4'b1011
+  ,e_dir_way_sel_tr_lce_way              = 4'b1100
 } bp_cce_inst_dir_way_sel_e;
 
 `define bp_cce_inst_dir_way_sel_width $bits(bp_cce_inst_dir_way_sel_e)

@@ -311,6 +311,7 @@ typedef enum {
   ,e_dir_way_sel_req_addr_way      = 0x8
   ,e_dir_way_sel_lru_way_addr_way  = 0x9
   ,e_dir_way_sel_sh_way_r0         = 0xa
+  ,e_dir_way_sel_tr_lce_way        = 0xb
 } bp_cce_inst_dir_way_sel_e;
 
 #define bp_cce_inst_dir_way_sel_width 4

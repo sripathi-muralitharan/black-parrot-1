@@ -111,6 +111,8 @@ typedef struct packed
 
   integer lce_sets;
   integer lce_assoc;
+  integer dcache_assoc;
+  integer icache_assoc;
   integer cce_block_width;
   integer cce_pc_width;
 
@@ -202,6 +204,8 @@ typedef struct packed
                                                                                                    \
   , localparam lce_sets_p                 = proc_param_lp.lce_sets                                 \
   , localparam lce_assoc_p                = proc_param_lp.lce_assoc                                \
+  , localparam dcache_assoc_p             = proc_param_lp.dcache_assoc                             \
+  , localparam icache_assoc_p             = proc_param_lp.icache_assoc                             \
   , localparam cce_block_width_p          = proc_param_lp.cce_block_width                          \
   , localparam cce_pc_width_p             = proc_param_lp.cce_pc_width                             \
   , localparam num_cce_instr_ram_els_p    = 2**cce_pc_width_p                                      \

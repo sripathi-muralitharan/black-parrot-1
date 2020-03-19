@@ -12,6 +12,14 @@ module bp_uce
     // definition here
     // `declare_bp_cache_service_if_widths(paddr_width_p, ptag_width_p, lce_sets_p, assoc_p, dword_width_p, cce_block_width_p)
     `declare_bp_me_if_widths(paddr_width_p, cce_block_width_p, lce_id_width_p, assoc_p)
+    , localparam cache_block_multiplier_lp = 2**(3-`BSG_SAFE_CLOG2(assoc_p))
+    , localparam cache_block_width_lp = dword_width_p * cache_block_multiplier_lp
+    , localparam byte_offset_width_lp  = `BSG_SAFE_CLOG2(cache_block_width_lp>>3)
+    // Words per line == associativity
+    , localparam word_offset_width_lp  = `BSG_SAFE_CLOG2(assoc_p)
+    , localparam block_offset_width_lp = (word_offset_width_lp + byte_offset_width_lp)
+
+    , localparam index_width_lp = `BSG_SAFE_CLOG2(lce_sets_p)
 
     , localparam stat_info_width_lp = `bp_be_dcache_stat_info_width(assoc_p)
 
@@ -177,12 +185,6 @@ module bp_uce
   wire uc_load_v_li    = cache_req_v_r & cache_req_r.msg_type inside {e_uc_load};
   wire wt_store_v_li   = cache_req_v_r & cache_req_r.msg_type inside {e_wt_store};
 
-  localparam byte_offset_width_lp  = `BSG_SAFE_CLOG2(dword_width_p>>3);
-  // Words per line == associativity
-  localparam word_offset_width_lp  = `BSG_SAFE_CLOG2(assoc_p);
-  localparam block_offset_width_lp = (word_offset_width_lp + byte_offset_width_lp);
-
-  localparam index_width_lp = `BSG_SAFE_CLOG2(lce_sets_p);
   logic [index_width_lp-1:0] index_cnt;
   logic index_up;
   bsg_counter_clear_up

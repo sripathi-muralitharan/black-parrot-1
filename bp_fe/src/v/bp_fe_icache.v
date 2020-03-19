@@ -418,7 +418,7 @@ module bp_fe_icache
 
   logic lower_upper_sel;
 
-  assign lower_upper_sel             = addr_tv_r[byte_offset_width_lp-1];
+  assign lower_upper_sel             = addr_tv_r[byte_offset_width_lp-(4 - `BSG_SAFE_CLOG2(icache_assoc_p))];
   assign data_o = lower_upper_sel
     ? final_data[instr_width_p+:instr_width_p]
     : final_data[instr_width_p-1:0];

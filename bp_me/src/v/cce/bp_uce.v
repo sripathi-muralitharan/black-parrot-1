@@ -6,7 +6,7 @@ module bp_uce
   import bp_common_cfg_link_pkg::*;
   import bp_me_pkg::*;
   #(parameter bp_params_e bp_params_p = e_bp_inv_cfg
-    parameter assoc_p = 8
+    , parameter assoc_p = 8
     `declare_bp_proc_params(bp_params_p)
     // To maintain single UCE file, need to override the widths macro
     // definition here

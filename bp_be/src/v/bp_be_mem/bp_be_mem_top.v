@@ -116,7 +116,7 @@ module bp_be_mem_top
 
 `declare_bp_cfg_bus_s(vaddr_width_p, core_id_width_p, cce_id_width_p, lce_id_width_p, cce_pc_width_p, cce_instr_width_p);
 `declare_bp_be_mmu_structs(vaddr_width_p, ptag_width_p, lce_sets_p, cce_block_width_p/8)
-`declare_bp_be_dcache_pkt_s(page_offset_width_lp, dword_width_p);
+`declare_bp_be_dcache_pkt_s(bp_page_offset_width_gp, dword_width_p);
   //`declare_bp_cache_service_if(paddr_width_p, ptag_width_p, lce_sets_p, dcache_assoc_p, dword_width_p, cce_block_width_p, dcache);
   //bp_dcache_req_s cache_req_cast_o;
 

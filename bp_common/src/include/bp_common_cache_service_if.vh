@@ -37,7 +37,7 @@ typedef enum logic [2:0]
 
 // Cache Service Interface - Cache miss structure
 
-`define declare_bp_``cache_name_mp``_req_s(data_width_mp, paddr_width_mp, cache_name_mp) \
+`define declare_bp_cache_req_s(data_width_mp, paddr_width_mp, cache_name_mp) \
  typedef struct packed                             \
  {                                                 \
    logic [data_width_mp-1:0] data;                 \
@@ -50,7 +50,7 @@ typedef enum logic [2:0]
  (data_width_mp+$bits(bp_cache_req_size_e) \
  +paddr_width_mp+$bits(bp_cache_req_msg_type_e))
 
-`define declare_bp_``cache_name_mp``_req_metadata_s(ways_mp, cache_name_mp) \
+`define declare_bp_cache_req_metadata_s(ways_mp, cache_name_mp) \
 typedef struct packed                              \
 {                                                  \
   logic [`BSG_SAFE_CLOG2(ways_mp)-1:0] repl_way;  \
@@ -100,7 +100,7 @@ typedef enum logic [1:0] {
 `define bp_cache_stat_mem_opcode_width $bits(bp_cache_stat_mem_opcode_e)
 
 // data mem pkt structure
-`define declare_bp_``cache_name_mp``_data_mem_pkt_s(sets_mp, ways_mp, data_width_mp, cache_name_mp)             \
+`define declare_bp_cache_data_mem_pkt_s(sets_mp, ways_mp, data_width_mp, cache_name_mp)             \
   typedef struct packed                                                                 			\
   {                                                                                     			\
     logic [`BSG_SAFE_CLOG2(sets_mp)-1:0]      index;                                    			\
@@ -114,7 +114,7 @@ typedef enum logic [1:0] {
    +`bp_cache_data_mem_opcode_width)
 
 // tag mem pkt structure
-`define declare_bp_``cache_name_mp``_tag_mem_pkt_s(sets_mp, ways_mp, tag_width_mp, cache_name_mp)       \
+`define declare_bp_cache_tag_mem_pkt_s(sets_mp, ways_mp, tag_width_mp, cache_name_mp)       \
   typedef struct packed {                                                        			\
     logic [`BSG_SAFE_CLOG2(sets_mp)-1:0]        index;                           			\
     logic [`BSG_SAFE_CLOG2(ways_mp)-1:0]        way_id;                          			\
@@ -126,7 +126,7 @@ typedef enum logic [1:0] {
 `define bp_cache_tag_mem_pkt_width(sets_mp, ways_mp, tag_width_mp) \
   (`BSG_SAFE_CLOG2(sets_mp)+`BSG_SAFE_CLOG2(ways_mp)+`bp_coh_bits+tag_width_mp+`bp_cache_tag_mem_opcode_width)
 
-`define declare_bp_``cache_name_mp``_stat_mem_pkt_s(sets_mp, ways_mp, cache_name_mp)    \
+`define declare_bp_cache_stat_mem_pkt_s(sets_mp, ways_mp, cache_name_mp)    \
   typedef struct packed {                                                 		\
     logic [`BSG_SAFE_CLOG2(sets_mp)-1:0]    index;                        		\
     logic [`BSG_SAFE_CLOG2(ways_mp)-1:0]    way_id;                       		\
@@ -137,11 +137,11 @@ typedef enum logic [1:0] {
   (`BSG_SAFE_CLOG2(sets_mp)+`BSG_SAFE_CLOG2(ways_mp)+`bp_cache_stat_mem_opcode_width)
 
 `define declare_bp_cache_service_if(addr_width_mp, tag_width_mp, sets_mp, ways_mp, req_data_width_mp, block_data_width_mp, cache_name_mp) \
-  `declare_bp_``cache_name_mp``_req_s(req_data_width_mp, addr_width_mp, cache_name_mp);               \
-  `declare_bp_``cache_name_mp``_req_metadata_s(ways_mp, cache_name_mp);                               \
-  `declare_bp_``cache_name_mp``_data_mem_pkt_s(sets_mp, ways_mp, block_data_width_mp, cache_name_mp); \
-  `declare_bp_``cache_name_mp``_tag_mem_pkt_s(sets_mp, ways_mp, tag_width_mp, cache_name_mp);         \
-  `declare_bp_``cache_name_mp``_stat_mem_pkt_s(sets_mp, ways_mp, cache_name_mp)
+  `declare_bp_cache_req_s(req_data_width_mp, addr_width_mp, cache_name_mp);               \
+  `declare_bp_cache_req_metadata_s(ways_mp, cache_name_mp);                               \
+  `declare_bp_cache_data_mem_pkt_s(sets_mp, ways_mp, block_data_width_mp, cache_name_mp); \
+  `declare_bp_cache_tag_mem_pkt_s(sets_mp, ways_mp, tag_width_mp, cache_name_mp);         \
+  `declare_bp_cache_stat_mem_pkt_s(sets_mp, ways_mp, cache_name_mp)
 
 `define declare_bp_cache_service_if_widths(addr_width_mp, tag_width_mp, sets_mp, ways_mp, req_data_width_mp, block_data_width_mp, cache_name_mp) \
   , localparam ``cache_name_mp``_req_width_lp = `bp_cache_req_width(req_data_width_mp, addr_width_mp)                    \

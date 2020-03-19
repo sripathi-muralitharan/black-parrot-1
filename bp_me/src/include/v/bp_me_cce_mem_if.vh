@@ -97,7 +97,7 @@ typedef enum logic [2:0]
 
 // CCE-MEM Interface
 `define bp_cce_mem_msg_payload_width(lce_id_width_mp, lce_assoc_mp) \
-  (lce_id_width_mp+`BSG_SAFE_CLOG2(lce_assoc_mp)+$bits(bp_coh_states_e)+1)
+  (lce_id_width_mp+`BSG_SAFE_CLOG2(8)+$bits(bp_coh_states_e)+1)
 
 `define bp_cce_mem_msg_header_width(addr_width_mp, lce_id_width_mp, lce_assoc_mp) \
   ($bits(bp_cce_mem_cmd_type_e)+addr_width_mp \

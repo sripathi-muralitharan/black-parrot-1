@@ -88,7 +88,7 @@ module bp_be_dcache
 
     , localparam cfg_bus_width_lp= `bp_cfg_bus_width(vaddr_width_p, core_id_width_p, cce_id_width_p, lce_id_width_p, cce_pc_width_p, cce_instr_width_p)
     , localparam block_size_in_words_lp = dcache_assoc_p
-    , localparam cache_block_width_multipler_lp = 2**(3 - `BSG_SAFE_CLOG2(dcache_assoc_p)) // Need to change '3' if assoc_p can be > 8
+    , localparam cache_block_width_multiplier_lp = 2**(3 - `BSG_SAFE_CLOG2(dcache_assoc_p)) // Need to change '3' if assoc_p can be > 8
     , localparam cache_block_width_lp = dword_width_p * cache_block_width_multiplier_lp 
     , localparam bypass_data_mask_width_lp = (dword_width_p >> 3) // Need to change '3' if dword_width_p changes
     , localparam data_mem_mask_width_lp = (cache_block_width_lp >> 3) 
@@ -101,7 +101,7 @@ module bp_be_dcache
   
     , localparam lce_data_width_lp=(lce_assoc_p*dword_width_p)
 
-    , localparam dcache_pkt_width_lp=`bp_be_dcache_pkt_width(page_offset_width_p,dword_width_p) 
+    , localparam dcache_pkt_width_lp=`bp_be_dcache_pkt_width(bp_page_offset_width_gp,dword_width_p) 
     , localparam tag_info_width_lp=`bp_be_dcache_tag_info_width(ptag_width_lp)
     , localparam stat_info_width_lp=`bp_be_dcache_stat_info_width(dcache_assoc_p)
   )
@@ -814,18 +814,20 @@ module bp_be_dcache
     ,.data_o(ld_data_way_picked)
   );
 
-  logic [(3-`BSG_SAFE_CLOG2(dcache_assoc_p)):0] dword_select;
-  assign dword_select = (dcache_assoc_p == 8) ? paddr_tv_r[2] : paddr_tv_r[3+:(3-`BSG_SAFE_CLOG2(dcache_assoc_p))];
-
-  bsg_mux
-    #(.width_p(dword_width_p)
-     ,.els_p(cache_block_width_multiplier_lp)
-     )
-     dword_mux
-     (.data_i(ld_data_way_picked)
-     ,.sel_i(dword_select)
-     ,.data_o(ld_data_dword_picked)
-     );
+  if(dcache_assoc_p == 8) begin
+    assign ld_data_dword_picked = ld_data_way_picked;
+  end
+  else begin  
+    bsg_mux
+      #(.width_p(dword_width_p)
+      ,.els_p(cache_block_width_multiplier_lp)
+      )
+      dword_mux
+      (.data_i(ld_data_way_picked)
+      ,.sel_i(paddr_tv_r[3+:(3-`BSG_SAFE_CLOG2(dcache_assoc_p))])
+      ,.data_o(ld_data_dword_picked)
+      );
+   end
 
   bsg_mux_segmented #(
     .segments_p(bypass_data_mask_width_lp)
@@ -927,22 +929,20 @@ module bp_be_dcache
     | (data_mem_pkt_v_i & data_mem_pkt.opcode == e_cache_data_mem_write);
 
   logic [dcache_assoc_p-1:0][cache_block_width_lp-1:0] lce_data_mem_write_data; 
-  logic [(3-`BSG_SAFE_CLOG2(dcache_assoc_p)):0] mask_select;
-  assign mask_select = (dcache_assoc_p == 8) ? paddr_tv_r[2] : paddr_tv_r[3+:(3-`BSG_SAFE_CLOG2(dcache_assoc_p))];
   
   logic [data_mem_mask_width_lp-1:0] wbuf_mask;
   if (dcache_assoc_p == 8) begin
     assign wbuf_mask = wbuf_entry_out.mask;
   end
   else if (dcache_assoc_p == 4) begin
-    assign wbuf_mask = (mask_select == 1'b0) ? {8'b0, wbuf_entry_out.mask} ? {wbuf_entry_out.mask, 8'b0};
+    assign wbuf_mask = (paddr_tv_r[3] == 1'b0) ? {8'b0, wbuf_entry_out.mask} : {wbuf_entry_out.mask, 8'b0};
   end
   else if (dcache_assoc_p == 2) begin
-   assign wbuf_mask =  (mask_select == 2'b00)
+   assign wbuf_mask =  (paddr_tv_r[4:3] == 2'b00)
       ? {24'b0, wbuf_entry_out.mask}
-      : (mask_select == 2'b01)
+      : (paddr_tv_r[4:3] == 2'b01)
       ? {16'b0, wbuf_entry_out.mask, 8'b0}
-      : (mask_select == 2'b10)
+      : (paddr_tv_r[4:3] == 2'b10)
       ? {8'b0, wbuf_entry_out.mask, 16'b0}
       : {wbuf_entry_out.mask, 24'b0};
   end

@@ -20,12 +20,12 @@ module bp_core_minimal
     // TODO: Need to change this
     `declare_bp_lce_cce_if_widths(cce_id_width_p, lce_id_width_p, paddr_width_p, lce_assoc_p, dword_width_p, cce_block_width_p)
     `declare_bp_cache_service_if_widths(paddr_width_p, ptag_width_p, lce_sets_p, dcache_assoc_p, dword_width_p, cce_block_width_p, dcache)
-    `decalre_bp_cache_service_if_widths(paddr_width_p, ptag_width_p, lce_sets_p, icache_assoc_p, dowrd_width_p, cce_block_width_p, icache)
+    `declare_bp_cache_service_if_widths(paddr_width_p, ptag_width_p, lce_sets_p, icache_assoc_p, dword_width_p, cce_block_width_p, icache)
 
     , localparam cfg_bus_width_lp = `bp_cfg_bus_width(vaddr_width_p, core_id_width_p, cce_id_width_p, lce_id_width_p, cce_pc_width_p, cce_instr_width_p)
     
     , localparam dcache_stat_info_width_lp = `bp_be_dcache_stat_info_width(dcache_assoc_p)
-    , localparam icache_stat_info_width_lp = `bp_be_icache_stat_infor_width(icache_assoc_p)
+    , localparam icache_stat_info_width_lp = `bp_fe_icache_stat_info_width(icache_assoc_p)
     )
    (
     input          clk_i
@@ -123,7 +123,7 @@ module bp_core_minimal
      ,.fe_cmd_v_i(fe_cmd_v_lo)
      ,.fe_cmd_yumi_o(fe_cmd_yumi_li)
 
-     ,.cache_req_o(icache_cache_req_o)
+     ,.cache_req_o(icache_req_o)
      ,.cache_req_v_o(icache_req_v_o)
      ,.cache_req_ready_i(icache_req_ready_i)
      ,.cache_req_metadata_o(icache_req_metadata_o)

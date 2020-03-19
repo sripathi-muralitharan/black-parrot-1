@@ -143,8 +143,8 @@ module bp_fe_icache
   logic                                     tag_mem_w_li;
   logic [index_width_lp-1:0]                tag_mem_addr_li;
   logic [icache_assoc_p-1:0][`bp_coh_bits+tag_width_lp-1:0] tag_mem_data_li;
-  logic [lceche_assoc_p-1:0][`bp_coh_bits+tag_width_lp-1:0] tag_mem_w_mask_li;
-  logic [lceche_assoc_p-1:0][`bp_coh_bits+tag_width_lp-1:0] tag_mem_data_lo;
+  logic [icache_assoc_p-1:0][`bp_coh_bits+tag_width_lp-1:0] tag_mem_w_mask_li;
+  logic [icache_assoc_p-1:0][`bp_coh_bits+tag_width_lp-1:0] tag_mem_data_lo;
 
   bsg_mem_1rw_sync_mask_write_bit #(
     .width_p(icache_assoc_p*(`bp_coh_bits+tag_width_lp))
@@ -172,9 +172,9 @@ module bp_fe_icache
   logic [icache_assoc_p-1:0]                                           data_mem_v_li;
   logic                                                                data_mem_w_li;
   logic [icache_assoc_p-1:0][index_width_lp+word_offset_width_lp-1:0]  data_mem_addr_li;
-  logic [lceche_assoc_p-1:0][cache_block_width_lp-1:0]                 data_mem_data_li;
-  logic [lceche_assoc_p-1:0][data_mask_width_lp-1:0]                   data_mem_w_mask_li;
-  logic [lceche_assoc_p-1:0][cache_block_width_lp-1:0]                 data_mem_data_lo;
+  logic [icache_assoc_p-1:0][cache_block_width_lp-1:0]                 data_mem_data_li;
+  logic [icache_assoc_p-1:0][data_mask_width_lp-1:0]                   data_mem_w_mask_li;
+  logic [icache_assoc_p-1:0][cache_block_width_lp-1:0]                 data_mem_data_lo;
 
   // data memory: banks
   for (genvar bank = 0; bank < icache_assoc_p; bank++)
@@ -383,15 +383,28 @@ module bp_fe_icache
   );
 
   logic [dword_width_p-1:0] ld_data_dword_picked;
-
-  bsg_mux #(
-    .width_p(dword_width_p)
-    ,.els_p(4'd8>>(way_id_width_lp))
-  ) data_dword_select_mux (
-    .data_i(ld_data_way_picked)
-    ,.sel_i((icache_assoc_p == 8) ? '0: addr_tv_r[3+:dword_select_width_lp])
-    ,.data_o(ld_data_dword_picked)
-  );
+  
+  if (icache_assoc_p == 8) begin
+    /*bsg_mux #(
+      .width_p(dword_width_p)
+      ,.els_p(4'd8>>(way_id_width_lp))
+    ) data_dword_select_mux (
+      .data_i(ld_data_way_picked)
+      ,.sel_i('0)
+      ,.data_o(ld_data_dword_picked)
+     );*/
+    assign ld_data_dword_picked = ld_data_way_picked;
+  end
+  else begin
+    bsg_mux #(
+      .width_p(dword_width_p)
+      ,.els_p(4'd8>>(way_id_width_lp))
+    ) data_dword_select_mux (
+      .data_i(ld_data_way_picked)
+      ,.sel_i(addr_tv_r[3+:dword_select_width_lp])
+      ,.data_o(ld_data_dword_picked)
+     );
+  end
 
   logic [dword_width_p-1:0] final_data;
   bsg_mux #(

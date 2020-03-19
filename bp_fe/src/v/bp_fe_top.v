@@ -60,7 +60,7 @@ module bp_fe_top
    , input [icache_tag_mem_pkt_width_lp-1:0]          tag_mem_pkt_i
    , input                                            tag_mem_pkt_v_i
    , output logic                                     tag_mem_pkt_ready_o
-   , output logic [tag_width_lp-1:0]                  tag_mem_o
+   , output logic [ptag_width_p-1:0]                  tag_mem_o
 
    , input [icache_stat_mem_pkt_width_lp-1:0]         stat_mem_pkt_i
    , input                                            stat_mem_pkt_v_i

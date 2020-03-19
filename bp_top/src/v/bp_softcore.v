@@ -42,8 +42,8 @@ module bp_softcore
   // TODO: lce_assoc_p is a dummy parameter for now. Need to manage this more
   // cleverly for parameterizable caches   
   `declare_bp_me_if(paddr_width_p, cce_block_width_p, lce_id_width_p, lce_assoc_p)
-  `declare_bp_be_dcache_stat_info_s(dcache_assoc_p)
-  `decalre_bp_fe_icache_stat_info_s(icache_assoc_p)
+  `declare_bp_be_dcache_stat_info_s(dcache_assoc_p);
+  `declare_bp_fe_icache_stat_info_s(icache_assoc_p);
   
   bp_cfg_bus_s cfg_bus_li;
 
@@ -52,23 +52,29 @@ module bp_softcore
   `bp_cast_i(bp_cce_mem_msg_s, mem_resp);
   `bp_cast_i(bp_cce_mem_msg_s, io_resp);
 
-  bp_cache_req_s dcache_req_lo, icache_req_lo;
+  bp_dcache_req_s dcache_req_lo;
+  bp_icache_req_s icache_req_lo;
   logic dcache_req_v_lo, dcache_req_ready_li;
   logic icache_req_v_lo, icache_req_ready_li;
-  bp_cache_req_metadata_s dcache_req_metadata_lo, icache_req_metadata_lo;
+  
+  bp_dcache_req_metadata_s dcache_req_metadata_lo;
+  bp_icache_req_metadata_s icache_req_metadata_lo;
   logic dcache_req_metadata_v_lo, icache_req_metadata_v_lo;
 
-  bp_cache_tag_mem_pkt_s dcache_tag_mem_pkt_li, icache_tag_mem_pkt_li;
+  bp_dcache_tag_mem_pkt_s dcache_tag_mem_pkt_li;
+  bp_icache_tag_mem_pkt_s icache_tag_mem_pkt_li;
   logic dcache_tag_mem_pkt_v_li, dcache_tag_mem_pkt_ready_lo;
   logic icache_tag_mem_pkt_v_li, icache_tag_mem_pkt_ready_lo;
   logic [ptag_width_p-1:0] dcache_tag_mem_lo, icache_tag_mem_lo;
   
-  bp_cache_data_mem_pkt_s dcache_data_mem_pkt_li, icache_data_mem_pkt_li;
+  bp_dcache_data_mem_pkt_s dcache_data_mem_pkt_li;
+  bp_icache_data_mem_pkt_s icache_data_mem_pkt_li;
   logic dcache_data_mem_pkt_v_li, dcache_data_mem_pkt_ready_lo;
   logic icache_data_mem_pkt_v_li, icache_data_mem_pkt_ready_lo;
   logic [cce_block_width_p-1:0] dcache_data_mem_lo, icache_data_mem_lo;
   
-  bp_cache_stat_mem_pkt_s dcache_stat_mem_pkt_li, icache_stat_mem_pkt_li;
+  bp_dcache_stat_mem_pkt_s dcache_stat_mem_pkt_li;
+  bp_icache_stat_mem_pkt_s icache_stat_mem_pkt_li;
   logic dcache_stat_mem_pkt_v_li, dcache_stat_mem_pkt_ready_lo;
   logic icache_stat_mem_pkt_v_li, icache_stat_mem_pkt_ready_lo;
   bp_be_dcache_stat_info_s dcache_stat_mem_lo;
@@ -192,7 +198,7 @@ module bp_softcore
     ,.stat_mem_pkt_ready_i(dcache_stat_mem_pkt_ready_lo)
     ,.stat_mem_i(dcache_stat_mem_lo)
 
-    ,.cache_req_complete_o(dcache_cache_req_complete_li)
+    ,.cache_req_complete_o(dcache_req_complete_li)
 
     ,.credits_full_o(credits_full_li[1])
     ,.credits_empty_o(credits_empty_li[1])
@@ -229,7 +235,7 @@ module bp_softcore
     ,.data_mem_pkt_o(icache_data_mem_pkt_li)
     ,.data_mem_pkt_v_o(icache_data_mem_pkt_v_li)
     ,.data_mem_pkt_ready_i(icache_data_mem_pkt_ready_lo)
-    ,.data_mem_i(data_mem_lo)
+    ,.data_mem_i(icache_data_mem_lo)
 
     ,.stat_mem_pkt_o(icache_stat_mem_pkt_li)
     ,.stat_mem_pkt_v_o(icache_stat_mem_pkt_v_li)
@@ -249,7 +255,7 @@ module bp_softcore
     ,.mem_resp_v_i(mem_resp_v_li[0])
     ,.mem_resp_yumi_o(mem_resp_yumi_lo[0])
     );
-    end
+    
 
   bp_clint_slice_buffered
    #(.bp_params_p(bp_params_p))

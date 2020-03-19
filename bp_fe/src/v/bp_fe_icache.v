@@ -22,7 +22,7 @@ module bp_fe_icache
   import bp_fe_icache_pkg::*;  
   #(parameter bp_params_e bp_params_p = e_bp_inv_cfg
     `declare_bp_proc_params(bp_params_p)
-    `declare_bp_cache_service_if_widths(paddr_width_p, ptag_width_p, lce_sets_p, icache_assoc_p, dword_width_p, cce_block_width_p)
+    `declare_bp_cache_service_if_widths(paddr_width_p, ptag_width_p, lce_sets_p, icache_assoc_p, dword_width_p, cce_block_width_p, icache)
         
     , localparam way_id_width_lp=`BSG_SAFE_CLOG2(icache_assoc_p)
     , localparam block_size_in_words_lp=icache_assoc_p
@@ -63,29 +63,29 @@ module bp_fe_icache
 
     // LCE Interface
     
-    , output [cache_req_width_lp-1:0]                  cache_req_o
+    , output [icache_req_width_lp-1:0]                  cache_req_o
     , output logic                                     cache_req_v_o
     , input                                            cache_req_ready_i
-    , output [cache_req_metadata_width_lp-1:0]         cache_req_metadata_o
+    , output [icache_req_metadata_width_lp-1:0]         cache_req_metadata_o
     , output                                           cache_req_metadata_v_o
 
     , input                                            cache_req_complete_i
 
     // data_mem
     , input data_mem_pkt_v_i
-    , input [cache_data_mem_pkt_width_lp-1:0] data_mem_pkt_i
+    , input [icache_data_mem_pkt_width_lp-1:0] data_mem_pkt_i
     , output logic data_mem_pkt_ready_o
     , output logic [cce_block_width_p-1:0] data_mem_o
 
     // tag_mem
     , input tag_mem_pkt_v_i
-    , input [cache_tag_mem_pkt_width_lp-1:0] tag_mem_pkt_i
+    , input [icache_tag_mem_pkt_width_lp-1:0] tag_mem_pkt_i
     , output logic tag_mem_pkt_ready_o
     , output logic [tag_width_lp-1:0] tag_mem_o
 
     // stat_mem
     , input stat_mem_pkt_v_i
-    , input [cache_stat_mem_pkt_width_lp-1:0] stat_mem_pkt_i
+    , input [icache_stat_mem_pkt_width_lp-1:0] stat_mem_pkt_i
     , output logic stat_mem_pkt_ready_o
     , output logic [stat_width_lp-1:0] stat_mem_o
  );
@@ -94,9 +94,9 @@ module bp_fe_icache
   bp_cfg_bus_s cfg_bus_cast_i;
   assign cfg_bus_cast_i = cfg_bus_i;
 
-  `declare_bp_cache_service_if(paddr_width_p, ptag_width_p, lce_sets_p, icache_assoc_p, dword_width_p, cce_block_width_p);
-  bp_cache_req_s cache_req_cast_lo;
-  bp_cache_req_metadata_s cache_req_metadata_cast_lo;
+  `declare_bp_cache_service_if(paddr_width_p, ptag_width_p, lce_sets_p, icache_assoc_p, dword_width_p, cce_block_width_p, icache);
+  bp_icache_req_s cache_req_cast_lo;
+  bp_icache_req_metadata_s cache_req_metadata_cast_lo;
   assign cache_req_o = cache_req_cast_lo;
   assign cache_req_metadata_o = cache_req_metadata_cast_lo;
   
@@ -306,11 +306,11 @@ module bp_fe_icache
  );
   
   // LCE
-  bp_cache_data_mem_pkt_s data_mem_pkt;
+  bp_icache_data_mem_pkt_s data_mem_pkt;
   assign data_mem_pkt = data_mem_pkt_i;
-  bp_cache_tag_mem_pkt_s tag_mem_pkt;
+  bp_icache_tag_mem_pkt_s tag_mem_pkt;
   assign tag_mem_pkt = tag_mem_pkt_i;
-  bp_cache_stat_mem_pkt_s stat_mem_pkt;
+  bp_icache_stat_mem_pkt_s stat_mem_pkt;
   assign stat_mem_pkt = stat_mem_pkt_i;
 
   always_comb begin

@@ -57,11 +57,13 @@ typedef enum logic [2:0]
  * way_id is the way within the cache miss address target set to fill the data in to
  */
 
+// TODO: way_id is hardcoded here
+
 `define declare_bp_cce_mem_msg_payload_s(lce_id_width_mp, lce_assoc_mp) \
   typedef struct packed                                       \
   {                                                           \
     logic [lce_id_width_mp-1:0]                  lce_id;      \
-    logic [`BSG_SAFE_CLOG2(lce_assoc_mp)-1:0]    way_id;      \
+    logic [2:0]                                  way_id;      \
     bp_coh_states_e                              state;       \
     logic                                        speculative; \
   } bp_cce_mem_msg_payload_s;

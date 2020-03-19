@@ -80,7 +80,7 @@ module bp_be_dcache
   import bp_common_aviary_pkg::*;
  #(parameter bp_params_e bp_params_p = e_bp_inv_cfg
    `declare_bp_proc_params(bp_params_p)
-   `declare_bp_cache_service_if_widths(paddr_width_p, ptag_width_p, lce_sets_p, dcache_assoc_p, dword_width_p, cce_block_width_p)
+   `declare_bp_cache_service_if_widths(paddr_width_p, ptag_width_p, lce_sets_p, dcache_assoc_p, dword_width_p, cce_block_width_p, dcache)
    
     , parameter writethrough_p=0
     , parameter debug_p=0 
@@ -99,7 +99,7 @@ module bp_be_dcache
     , localparam ptag_width_lp = (paddr_width_p-bp_page_offset_width_gp)
     , localparam way_id_width_lp = `BSG_SAFE_CLOG2(dcache_assoc_p)
   
-    , localparam lce_data_width_lp=(lce_assoc_p*dword_width_p) // TODO: Need to change this*
+    , localparam lce_data_width_lp=(lce_assoc_p*dword_width_p)
 
     , localparam dcache_pkt_width_lp=`bp_be_dcache_pkt_width(page_offset_width_p,dword_width_p) 
     , localparam tag_info_width_lp=`bp_be_dcache_tag_info_width(ptag_width_lp)
@@ -133,29 +133,29 @@ module bp_be_dcache
 
     // D$-LCE Interface
     // signals to LCE
-    , output [cache_req_width_lp-1:0] cache_req_o
+    , output [dcache_req_width_lp-1:0] cache_req_o
     , output logic cache_req_v_o 
     , input cache_req_ready_i
-    , output [cache_req_metadata_width_lp-1:0] cache_req_metadata_o
+    , output [dcache_req_metadata_width_lp-1:0] cache_req_metadata_o
     , output cache_req_metadata_v_o
 
     , input cache_req_complete_i
 
     // data_mem
     , input data_mem_pkt_v_i
-    , input [cache_data_mem_pkt_width_lp-1:0] data_mem_pkt_i
+    , input [dcache_data_mem_pkt_width_lp-1:0] data_mem_pkt_i
     , output logic data_mem_pkt_ready_o
     , output logic [cce_block_width_p-1:0] data_mem_o 
 
     // tag_mem
     , input tag_mem_pkt_v_i
-    , input [cache_tag_mem_pkt_width_lp-1:0] tag_mem_pkt_i
+    , input [dcache_tag_mem_pkt_width_lp-1:0] tag_mem_pkt_i
     , output logic tag_mem_pkt_ready_o
     , output logic [ptag_width_lp-1:0] tag_mem_o
 
     // stat_mem
     , input stat_mem_pkt_v_i
-    , input [cache_stat_mem_pkt_width_lp-1:0] stat_mem_pkt_i
+    , input [dcache_stat_mem_pkt_width_lp-1:0] stat_mem_pkt_i
     , output logic stat_mem_pkt_ready_o
     , output logic [stat_info_width_lp-1:0] stat_mem_o
 
@@ -165,9 +165,9 @@ module bp_be_dcache
   bp_cfg_bus_s cfg_bus_cast_i;
   assign cfg_bus_cast_i = cfg_bus_i;
 
-  `declare_bp_cache_service_if(paddr_width_p, ptag_width_p, lce_sets_p, dcache_assoc_p, dword_width_p, cce_block_width_p);
-  bp_cache_req_s cache_req_cast_o;
-  bp_cache_req_metadata_s cache_req_metadata_cast_o;
+  `declare_bp_cache_service_if(paddr_width_p, ptag_width_p, lce_sets_p, dcache_assoc_p, dword_width_p, cce_block_width_p, dcache);
+  bp_dcache_req_s cache_req_cast_o;
+  bp_dcache_req_metadata_s cache_req_metadata_cast_o;
   assign cache_req_o = cache_req_cast_o;
   assign cache_req_metadata_o = cache_req_metadata_cast_o;
   
@@ -651,14 +651,14 @@ module bp_be_dcache
  
   // LCE Packet casting
   //
-  bp_cache_data_mem_pkt_s data_mem_pkt;
+  bp_dcache_data_mem_pkt_s data_mem_pkt;
   assign data_mem_pkt = data_mem_pkt_i;
-  bp_cache_tag_mem_pkt_s tag_mem_pkt;
+  bp_dcache_tag_mem_pkt_s tag_mem_pkt;
   assign tag_mem_pkt = tag_mem_pkt_i;
-  bp_cache_stat_mem_pkt_s stat_mem_pkt;
+  bp_dcache_stat_mem_pkt_s stat_mem_pkt;
   assign stat_mem_pkt = stat_mem_pkt_i;
 
-  logic [dcache_assoc_p-1:0][cache_block_width_lp-1:0] lce_data_mem_data_li; // TODO: Need to change the dword width here 
+  logic [dcache_assoc_p-1:0][cache_block_width_lp-1:0] lce_data_mem_data_li; 
  
   logic data_mem_pkt_ready;
   logic tag_mem_pkt_ready;

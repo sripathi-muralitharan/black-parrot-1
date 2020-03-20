@@ -935,14 +935,14 @@ module bp_be_dcache
     assign wbuf_mask = wbuf_entry_out.mask;
   end
   else if (dcache_assoc_p == 4) begin
-    assign wbuf_mask = (paddr_tv_r[3] == 1'b0) ? {8'b0, wbuf_entry_out.mask} : {wbuf_entry_out.mask, 8'b0};
+    assign wbuf_mask = (wbuf_entry_out.paddr[3] == 1'b0) ? {8'b0, wbuf_entry_out.mask} : {wbuf_entry_out.mask, 8'b0};
   end
   else if (dcache_assoc_p == 2) begin
-   assign wbuf_mask =  (paddr_tv_r[4:3] == 2'b00)
+   assign wbuf_mask =  (wbuf_entry_out.paddr[4:3] == 2'b00)
       ? {24'b0, wbuf_entry_out.mask}
-      : (paddr_tv_r[4:3] == 2'b01)
+      : (wbuf_entry_out.paddr[4:3] == 2'b01)
       ? {16'b0, wbuf_entry_out.mask, 8'b0}
-      : (paddr_tv_r[4:3] == 2'b10)
+      : (wbuf_entry_out.paddr[4:3] == 2'b10)
       ? {8'b0, wbuf_entry_out.mask, 16'b0}
       : {wbuf_entry_out.mask, 24'b0};
   end
@@ -957,7 +957,7 @@ module bp_be_dcache
         ? {wbuf_entry_out_index, wbuf_entry_out_word_offset}
         : {data_mem_pkt.index, data_mem_pkt.way_id ^ ((word_offset_width_lp)'(i))});
     assign data_mem_data_li[i] = wbuf_yumi_li
-      ? {dcache_assoc_p{wbuf_entry_out.data}} 
+      ? {cache_block_width_multiplier_lp{wbuf_entry_out.data}} 
       : lce_data_mem_write_data[i]; 
  
     assign data_mem_mask_li[i] = wbuf_yumi_li

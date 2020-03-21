@@ -13,7 +13,7 @@ export BASEJUMP_STL_DIR ?= $(TOP)/../basejump_stl
 
 # If the machine you are working on is bsg_cadenv compliant, then you do not
 # need to setup the cad tools, simply put bsg_cadenv in the same root dir.
-export BSG_CADENV_DIR ?= ~/final_project/ee477-cad/common/mk/cadenv
+export BSG_CADENV_DIR ?= /homes/sripathi/EE_525/final_project/ee477-cad/common/mk/cadenv
 -include $(BSG_CADENV_DIR)/ee_washington_edu.cadenv.mk
 
 ## Sepcify license path if needed

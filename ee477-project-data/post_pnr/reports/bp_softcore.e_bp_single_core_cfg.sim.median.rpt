@@ -1,0 +1,8 @@
+[CORE0 FSH] PASS
+All cores finished! Terminating...
+$finish called from file "/home/sripathi/EE_525/final_project/black-parrot/bp_top/test/common/bp_nonsynth_host.v", line 142.
+$finish at simulation time            219990000
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 219990000 ps
+CPU Time:     42.640 seconds;       Data structure size: 157.3Mb
+Sat Mar 21 01:52:48 2020

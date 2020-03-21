@@ -1,0 +1,52 @@
+
+Note-[RT_BS] Larger stack needed
+  Note: Bumping stack limit from 8192 to 8276 Kbytes.
+
+Chronologic VCS simulator copyright 1991-2016
+Contains Synopsys proprietary information.
+Compiler version L-2016.06-SP2-2_Full64; Runtime version L-2016.06-SP2-2_Full64;  Mar 21 01:52 2020
+
+Warning-[LOOP_NOTSUP] Unsupported usage.
+  +vcs+loopreport is not supported when specify blocks or timing checks are 
+  present.
+  The loop may not be correctly reported in presence of specify blocks or 
+  timing checks.
+
+Doing SDF annotation ...... Done
+test_bp.clock_gen with cycle_time_p       10000
+## bsg_mem_1r1w: instantiating width_p=        570, els_p=          2, read_write_same_addr_p=          0, harden_p=          0 (test_bp.tb.host.io_resp_buffer.mem_1r1w)
+########### BP Parameters ##############
+bp_params_e e_bp_softcore_cfg: bp_proc_param_s '{cc_x_dim:1, cc_y_dim:1, ic_y_dim:1, mc_y_dim:0, ac_x_dim:0, coherent_l1:0, vaddr_width:39, paddr_width:40, asid_width:1, branch_metadata_fwd_width:28, btb_tag_width:10, btb_idx_width:6, bht_idx_width:9, ras_idx_width:2, itlb_els:8, dtlb_els:8, lce_sets:64, lce_assoc:8, dcache_assoc:2, icache_assoc:4, cce_block_width:512, cce_pc_width:8, l2_sets:128, l2_assoc:8, fe_queue_fifo_els:8, fe_cmd_fifo_els:4, async_coh_clk:0, coh_noc_max_credits:8, coh_noc_flit_width:128, coh_noc_cid_width:2, coh_noc_len_width:3, async_mem_clk:1, mem_noc_max_credits:8, mem_noc_flit_width:64, mem_noc_cid_width:2, mem_noc_len_width:4, async_io_clk:1, io_noc_max_credits:16, io_noc_flit_width:64, io_noc_did_width:3, io_noc_cid_width:2, io_noc_len_width:4}
+########### TOP IF ##############
+bp_cfg_bus_s          bits: struct         269 width         269
+########### FE-BE IF ##############
+bp_fe_queue_s          bits: struct         101 width         101
+bp_fe_cmd_s            bits: struct          78 width          78
+########### LCE-CCE IF ##############
+bp_lce_cce_req_s       bits: struct         126 width         126
+bp_lce_cmd_s           bits: struct         581 width         581
+bp_lce_cce_resp_s      bits: struct         567 width         567
+########### CCE-MEM IF ##############
+bp_cce_mem_msg_s       bits: struct         570 width         570
+Stopping new assertion attempts at time 0ps: level = 0 arg = * (from inst test_bp (/home/sripathi/EE_525/final_project/black-parrot/bp_top/syn/results/vcs/bp_softcore.e_bp_single_core_cfg.build.post_pnr_time/test_bp.v:44))
+__________ ___________  _______________________________
+\______   \\_   _____/ /   _____/\_   _____/\__    ___/
+ |       _/ |    __)_  \_____  \  |    __)_   |    |   
+ |    |   \ |        \ /        \ |        \  |    |  0->1 time =          0
+ |____|_  //_______  //_______  //_______  /  |____|   
+ ASYNC  \/         \/         \/         \/            
+__________ ___________  _______________________________
+\______   \\_   _____/ /   _____/\_   _____/\__    ___/
+ |       _/ |    __)_  \_____  \  |    __)_   |    |   
+ |    |   \ |        \ /        \ |        \  |    |  1->0 time =        190
+ |____|_  //_______  //_______  //_______  /  |____|   
+ ASYNC  \/         \/         \/         \/            
+Starting assertion attempts at time 190000ps: level = 0 arg = * (from inst test_bp (/home/sripathi/EE_525/final_project/black-parrot/bp_top/syn/results/vcs/bp_softcore.e_bp_single_core_cfg.build.post_pnr_time/test_bp.v:47))
+[CORE0 FSH] PASS
+All cores finished! Terminating...
+$finish called from file "/home/sripathi/EE_525/final_project/black-parrot/bp_top/test/common/bp_nonsynth_host.v", line 142.
+$finish at simulation time             10830000
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 10830000 ps
+CPU Time:      2.150 seconds;       Data structure size: 157.3Mb
+Sat Mar 21 01:52:51 2020

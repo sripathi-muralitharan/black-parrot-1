@@ -276,7 +276,7 @@ module bp_softcore
     ,.mem_resp_yumi_o(proc_resp_yumi_lo[0])
     );
 
-  bp_clint_slice_buffered
+  bp_clint_slice
    #(.bp_params_p(bp_params_p))
    clint
     (.clk_i(clk_i)
@@ -295,7 +295,7 @@ module bp_softcore
      ,.external_irq_o(external_irq_li)
      );
 
-  bp_cfg_buffered
+  bp_cfg
    #(.bp_params_p(bp_params_p))
    cfg
     (.clk_i(clk_i)
@@ -377,7 +377,7 @@ module bp_softcore
   wire is_cfg_cmd          = local_cmd_li & (device_cmd_li == cfg_dev_gp);
   wire is_clint_cmd        = local_cmd_li & (device_cmd_li == clint_dev_gp);
   wire is_io_cmd           = local_cmd_li & (device_cmd_li == host_dev_gp);
-  wire is_cache_cmd        = ~local_cmd_li;
+  wire is_cache_cmd        = ~local_cmd_li || (local_cmd_li & (device_cmd_li == cache_dev_gp));
 
   assign cfg_cmd_v_li   = is_cfg_cmd   & |fifo_yumi_li;
   assign clint_cmd_v_li = is_clint_cmd & |fifo_yumi_li;
